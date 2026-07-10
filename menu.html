@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Chicago Chicken – Menü-Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --surface:#ffffff; --raised:#fafafa;
+  --hairline: rgba(10,10,10,.12); --hairline-strong: rgba(10,10,10,.22);
+  --gold:#D9A441; --gold-dim:#a97a20;
+  --orange:#EA6A00; --orange-dim:#c85900; --orange-tint: rgba(234,106,0,.10);
+  --ink:#111111; --ink-dim:#6a6a6a; --ink-faint:#a8a8a8;
+  --hot:#B8623F;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;padding-bottom:60px;-webkit-tap-highlight-color:transparent;}
+h1,h2,h3,.mono,button{font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:.04em;}
+input,textarea,select{font-family:'Inter',sans-serif;}
+
+/* ---------- Top bar ---------- */
+header{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--hairline);padding:14px 5vw;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.brand{color:var(--gold);font-weight:700;font-size:1rem;}
+.mode-toggle{display:flex;background:var(--surface);border-radius:20px;padding:3px;border:1px solid var(--hairline);}
+.mode-toggle button{background:none;border:none;color:var(--ink-dim);font-size:.68rem;padding:8px 16px;border-radius:16px;cursor:pointer;}
+.mode-toggle button.active{background:var(--gold);color:#1a1207;}
+.iobtns{display:flex;gap:8px;}
+.iobtns button{background:none;border:1px solid var(--hairline);color:var(--ink-dim);font-size:.65rem;padding:8px 12px;border-radius:8px;cursor:pointer;}
+.iobtns button:active{border-color:var(--gold);color:var(--gold);}
+
+main{max-width:760px;margin:0 auto;padding:26px 5vw 40px;}
+
+/* ---------- Edit mode: category & item rows ---------- */
+.add-cat-row{display:flex;gap:8px;margin-bottom:28px;}
+.add-cat-row input{flex:1;padding:13px 14px;border-radius:8px;border:1px solid var(--hairline);background:var(--surface);color:var(--ink);font-size:.9rem;}
+.btn-gold{background:var(--gold);color:#1a1207;border:none;border-radius:8px;padding:13px 20px;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap;}
+.btn-gold:active{opacity:.85;}
+.btn-ghost{background:none;border:1px solid var(--hairline);color:var(--ink);border-radius:8px;padding:11px 16px;font-size:.78rem;cursor:pointer;}
+
+.cat-edit-block{margin-bottom:34px;}
+.cat-edit-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.cat-edit-head .handle{color:var(--ink-dim);cursor:grab;font-size:1.1rem;}
+.cat-edit-head input{flex:1;background:none;border:none;border-bottom:1px solid var(--hairline);color:var(--gold);font-family:'Oswald',sans-serif;font-size:1.05rem;text-transform:uppercase;letter-spacing:.05em;padding:6px 2px;}
+.cat-edit-head button{background:none;border:none;color:var(--ink-dim);font-size:.95rem;cursor:pointer;padding:4px 6px;}
+.cat-edit-head button.del{color:var(--hot);}
+
+.edit-item-row{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:10px;margin-bottom:8px;}
+.edit-item-row .handle{color:var(--ink-dim);cursor:grab;font-size:1rem;}
+.thumb{width:52px;height:52px;background:var(--surface);border-radius:8px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--hairline);}
+.thumb img{width:100%;height:100%;object-fit:contain;}
+.thumb .ph{color:var(--ink-faint);font-size:1.3rem;}
+.edit-item-row .info{flex:1;min-width:0;}
+.edit-item-row .info .n{font-size:.88rem;font-weight:600;}
+.edit-item-row .info .p{color:var(--gold-dim);font-size:.78rem;}
+.edit-item-row button{background:none;border:none;color:var(--ink-dim);font-size:.95rem;cursor:pointer;padding:4px 8px;}
+
+.add-item-btn{width:100%;background:none;border:1px dashed var(--hairline);color:var(--ink-dim);border-radius:10px;padding:12px;font-size:.78rem;cursor:pointer;margin-top:4px;}
+.add-item-btn:active{border-color:var(--gold);color:var(--gold);}
+
+.empty-hint{text-align:center;color:var(--ink-dim);font-size:.85rem;padding:50px 20px;line-height:1.6;}
+.empty-hint b{color:var(--gold);}
+
+/* ---------- Preview mode: shared card look ---------- */
+#preview{display:block;}
+#preview.active{display:block;}
+.p-cat{margin-bottom:56px;}
+.p-cat-label{font-family:'Inter',sans-serif;font-weight:800;letter-spacing:-.01em;font-size:1.5rem;color:var(--ink);margin-bottom:10px;}
+.p-cat-rule{width:36px;height:3px;border-radius:2px;background:var(--orange);margin-bottom:24px;}
+
+.p-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.p-card{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(10,10,10,.04);transition:box-shadow .15s,border-color .15s;}
+.p-card:active{border-color:var(--hairline-strong);box-shadow:0 2px 8px rgba(10,10,10,.08);}
+.p-photo{width:100%;aspect-ratio:5/4;background:#fff;display:flex;align-items:center;justify-content:center;}
+.p-photo img{width:97%;height:97%;object-fit:contain;}
+.p-photo .ph{color:var(--ink-faint);font-size:2.2rem;}
+.p-body{padding:12px 12px 14px;}
+.p-top-row{display:flex;flex-direction:column;gap:2px;margin-bottom:5px;}
+.p-name{font-family:'Inter',sans-serif;font-weight:700;letter-spacing:-.005em;font-size:.92rem;color:var(--ink);line-height:1.3;}
+.p-price{font-family:'Inter',sans-serif;font-weight:700;font-size:.84rem;color:var(--orange);}
+.p-desc{font-size:.72rem;color:var(--ink-dim);line-height:1.5;margin-bottom:8px;}
+.p-heat{display:inline-block;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--hot);border:1px solid rgba(184,98,63,.4);padding:2px 8px;border-radius:20px;}
+.p-empty{text-align:center;color:var(--ink-dim);padding:60px 20px;font-size:.9rem;}
+.kiosk-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0 14px;border-bottom:1px solid var(--hairline-strong);margin-bottom:16px;}
+.kh-brand{display:flex;align-items:center;gap:11px;min-height:64px;}
+.kh-logo-img{max-height:64px;max-width:260px;width:auto;height:auto;object-fit:contain;}
+.kh-mark{width:38px;height:38px;border-radius:10px;background:#111111;color:var(--orange);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:800;font-size:.9rem;letter-spacing:0;flex-shrink:0;}
+.kh-word{font-family:'Inter',sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.03em;line-height:1.2;text-transform:uppercase;color:#111111;}
+.kh-word span{color:var(--orange);}
+.kh-slogan{flex:1;min-width:24px;text-align:center;font-family:'Inter',sans-serif;font-weight:800;font-size:1.5rem;line-height:1.05;color:var(--ink);letter-spacing:0;text-transform:uppercase;white-space:normal;padding:0 8px;}
+.kh-slogan:empty{display:none;}
+.kh-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+@media (max-width:380px){
+  .kh-slogan{font-size:1.1rem;}
+}
+.kh-icon-btn{position:relative;width:42px;height:42px;border-radius:12px;border:1px solid var(--hairline-strong);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;color:#111111;}
+.kh-icon-btn svg{display:block;}
+.kh-icon-btn:active{border-color:#111111;}
+.kh-badge{position:absolute;top:-5px;right:-5px;background:var(--orange);color:#fff;font-size:.6rem;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;font-family:'Inter',sans-serif;}
+
+/* ---------- Modal (item editor) ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:50;display:none;align-items:flex-end;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);width:100%;max-width:640px;border-radius:18px 18px 0 0;padding:22px 20px 30px;max-height:92vh;overflow-y:auto;border-top:1px solid var(--hairline-strong);}
+.modal h2{color:var(--gold);font-size:1.05rem;margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.68rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.field input,.field textarea{width:100%;padding:12px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.92rem;}
+.field textarea{min-height:64px;resize:vertical;}
+
+.img-upload{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.img-upload .preview{width:96px;height:96px;background:var(--bg);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px dashed var(--hairline);flex-shrink:0;}
+.img-upload .preview img{width:100%;height:100%;object-fit:contain;}
+.img-upload label.upload-btn{background:var(--raised);border:1px solid var(--hairline);border-radius:8px;padding:10px 14px;font-size:.78rem;cursor:pointer;color:var(--gold);}
+.img-upload input[type=file]{display:none;}
+.upload-hint{font-size:.66rem;color:var(--ink-dim);line-height:1.4;margin-top:6px;max-width:220px;}
+
+.heat-picker{display:flex;gap:8px;}
+.heat-picker button{flex:1;padding:10px 0;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink-dim);font-size:.78rem;cursor:pointer;}
+.heat-picker button.active{border-color:var(--hot);background:rgba(184,98,63,.12);color:var(--hot);}
+
+.modal-actions{display:flex;gap:10px;margin-top:18px;}
+.modal-actions button{flex:1;padding:13px;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;border:none;}
+.modal-actions .save{background:var(--gold);color:#1a1207;}
+.modal-actions .cancel{background:none;border:1px solid var(--hairline);color:var(--ink);}
+.modal-actions .delete{background:var(--hot);color:#fff;flex:0 0 46px;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1a1207;padding:10px 18px;border-radius:20px;font-size:.8rem;font-weight:600;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* ================= Menüs (Kombo-Menüs) / Menü-Regeln – Editor ================= */
+.field select{width:100%;padding:12px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.92rem;}
+
+.menu-section{margin-top:44px;padding-top:28px;border-top:1px solid var(--hairline-strong);}
+.menu-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;}
+.menu-section-head h3{color:var(--gold);font-size:.95rem;letter-spacing:.05em;}
+
+.price-mode-picker{display:flex;gap:8px;}
+.price-mode-picker button{flex:1;padding:10px 0;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink-dim);font-size:.76rem;cursor:pointer;}
+.price-mode-picker button.active{border-color:var(--gold);background:rgba(217,164,65,.12);color:var(--gold);}
+.markup-preview{font-size:.78rem;color:var(--gold-dim);margin-top:8px;}
+
+.comp-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.comp-row input.qty{width:56px;padding:10px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.85rem;text-align:center;}
+.comp-row input.clabel{flex:1;padding:10px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.85rem;}
+.comp-row button{background:none;border:none;color:var(--ink-dim);font-size:.9rem;cursor:pointer;padding:4px 6px;}
+
+.group-card{border:1px solid var(--hairline);border-radius:10px;padding:12px;margin-bottom:12px;background:var(--raised);}
+.group-card-head{display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;}
+.group-card-head input.gname{flex:1;padding:10px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.85rem;}
+.group-card-head input.gcount{width:56px;padding:10px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.85rem;text-align:center;}
+.group-card-head button.del{background:none;border:none;color:var(--hot);font-size:.9rem;cursor:pointer;flex-shrink:0;}
+.group-count-label{font-size:.6rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.rule-meta-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;}
+.rule-meta-row select{padding:9px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.78rem;}
+
+.group-opt-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
+.group-opt-row input.oname{flex:1;padding:9px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.82rem;}
+.group-opt-row input.oname:disabled{opacity:.7;}
+.group-opt-row input.oprice{width:76px;padding:9px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.82rem;text-align:center;}
+.group-opt-row button{background:none;border:none;color:var(--ink-dim);font-size:.85rem;cursor:pointer;}
+.opt-thumb-upload{flex:0 0 auto;width:38px;height:38px;border-radius:8px;border:1px solid var(--hairline);background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;font-size:.9rem;}
+.opt-thumb-upload img{width:100%;height:100%;object-fit:cover;}
+
+/* ---------- Kategorie-Zusatzfelder im Editor ---------- */
+.cat-edit-extra{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;padding-left:2px;}
+.cat-edit-extra .cthumb{width:60px;height:60px;background:var(--bg);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px dashed var(--hairline);flex-shrink:0;}
+.cat-edit-extra .cthumb img{width:100%;height:100%;object-fit:cover;}
+.cat-edit-extra .cinfo{flex:1;min-width:0;}
+.cat-edit-extra .cinfo textarea{width:100%;padding:8px;border-radius:8px;border:1px solid var(--hairline);background:var(--surface);color:var(--ink);font-size:.75rem;min-height:40px;resize:vertical;margin-bottom:6px;}
+.cat-edit-extra label.upload-btn-sm{display:inline-block;font-size:.65rem;color:var(--gold);cursor:pointer;border:1px solid var(--hairline);padding:5px 9px;border-radius:6px;margin-bottom:6px;}
+.cat-edit-extra input[type=file]{display:none;}
+.cat-visible-toggle{display:flex;align-items:center;gap:6px;font-size:.65rem;color:var(--ink-dim);}
+.cat-visible-toggle input{accent-color:var(--gold);width:16px;height:16px;}
+
+.upsell-cat-group{margin-bottom:18px;}
+.upsell-cat-group h4{font-size:.72rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.upsell-item-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--hairline);border-radius:8px;margin-bottom:6px;cursor:pointer;}
+.upsell-item-row.picked{border-color:var(--gold);background:rgba(217,164,65,.08);}
+.upsell-item-row input{width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;pointer-events:none;}
+.upsell-item-row .uithumb{width:34px;height:34px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg);display:flex;align-items:center;justify-content:center;border:1px solid var(--hairline);}
+.upsell-item-row .uithumb img{width:100%;height:100%;object-fit:contain;}
+.upsell-item-row .uin{flex:1;font-size:.85rem;min-width:0;}
+.upsell-item-row .uip{font-size:.76rem;color:var(--gold-dim);white-space:nowrap;}
+
+/* ================= NEU: Kiosk-Vorschau ================= */
+.kiosk-sticky-head{position:sticky;top:57px;z-index:25;background:#fff;}
+.kiosk-top{background:var(--bg);padding-bottom:14px;margin-bottom:4px;}
+.kiosk-crumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.66rem;color:var(--ink-dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em;}
+.kiosk-crumbs .sep{color:var(--ink-faint);}
+.kiosk-crumbs .crumb{cursor:pointer;}
+.kiosk-crumbs .crumb:last-child{color:var(--ink);font-weight:700;cursor:default;}
+.kiosk-nav-row{display:flex;gap:8px;}
+.kiosk-nav-row button{background:var(--raised);border:1px solid var(--hairline);color:var(--ink);border-radius:8px;padding:9px 14px;font-size:.72rem;cursor:pointer;}
+.kiosk-nav-row button:active{border-color:#111111;color:#111111;}
+
+.tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.main-tile{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(10,10,10,.04);transition:border-color .15s,box-shadow .15s;}
+.main-tile:active{border-color:var(--hairline-strong);box-shadow:0 2px 8px rgba(10,10,10,.08);}
+.main-tile .mt-photo{width:100%;aspect-ratio:1/1;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.main-tile .mt-photo img{width:100%;height:100%;object-fit:cover;}
+.main-tile .mt-photo .ph{font-size:2.4rem;color:var(--ink-faint);}
+.main-tile .mt-body{padding:12px;}
+.main-tile .mt-name{font-family:'Inter',sans-serif;font-weight:700;font-size:.98rem;color:var(--ink);margin-bottom:3px;}
+.main-tile .mt-desc{font-size:.68rem;color:var(--ink-dim);line-height:1.4;}
+
+.kiosk-product-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.kiosk-card{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(10,10,10,.04);transition:border-color .15s,box-shadow .15s;}
+.kiosk-card:active{border-color:var(--hairline-strong);box-shadow:0 2px 8px rgba(10,10,10,.08);}
+.kiosk-card .sel-btn{margin-top:8px;width:100%;background:var(--orange);color:#ffffff;border:none;border-radius:8px;padding:9px;font-size:.68rem;font-weight:700;cursor:pointer;}
+
+.kiosk-detail{padding-bottom:30px;}
+.kiosk-detail-photo{width:100%;aspect-ratio:4/3;background:var(--raised);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+.kiosk-detail-photo img{width:100%;height:100%;object-fit:contain;}
+.kiosk-detail-photo .ph{font-size:3rem;color:var(--ink-faint);}
+.kiosk-detail-name{font-family:'Inter',sans-serif;font-weight:800;letter-spacing:-.01em;font-size:1.4rem;color:var(--ink);margin-bottom:6px;}
+.kiosk-detail-desc{font-size:.82rem;color:var(--ink-dim);line-height:1.6;margin-bottom:14px;}
+
+/* ---------- Kiosk: permanent sidebar nav (immer links, vertikal scrollbar) ---------- */
+.kiosk-body{display:flex;flex-direction:row;gap:10px;align-items:flex-start;margin-top:18px;}
+.kiosk-sidebar{flex:0 0 92px;position:sticky;top:var(--sidebar-top, 210px);display:flex;flex-direction:column;gap:9px;max-height:calc(100vh - var(--sidebar-top, 210px) - 24px);overflow-y:auto;overflow-x:hidden;padding:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.kiosk-sidebar::-webkit-scrollbar{display:none;}
+.kiosk-sidebar .sb-item{position:relative;flex:0 0 auto;aspect-ratio:1/1;display:flex;align-items:flex-end;justify-content:center;background:var(--raised);border:1px solid var(--hairline);color:var(--ink-dim);border-radius:12px;overflow:hidden;font-family:'Inter',sans-serif;font-weight:700;font-size:.62rem;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;text-align:center;line-height:1.2;}
+.kiosk-sidebar .sb-item.active{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange) inset;}
+.kiosk-sidebar .sb-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0;}
+.kiosk-sidebar .sb-item span.sb-label{position:relative;z-index:1;width:100%;padding:16px 4px 8px;background:linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0));color:#fff;}
+.kiosk-sidebar .sb-item.no-img{align-items:center;justify-content:center;}
+.kiosk-sidebar .sb-item.no-img span.sb-label{position:static;background:none;color:var(--ink-dim);padding:0;}
+.kiosk-sidebar .sb-item.active span.sb-label{color:#fff;}
+.kiosk-sidebar .sb-item.active.no-img span.sb-label{color:#ffffff;}
+.kiosk-sidebar .sb-item.active.no-img{background:var(--orange);border-color:var(--orange);}
+.kiosk-main{flex:1 1 auto;min-width:0;}
+@media (min-width:640px){
+  .kiosk-body{gap:22px;}
+  .kiosk-sidebar{flex:0 0 220px;top:var(--sidebar-top, 210px);}
+  .kiosk-sidebar .sb-item{aspect-ratio:16/9;border-radius:14px;font-size:.78rem;}
+  .kiosk-sidebar .sb-item span.sb-label{text-align:left;padding:26px 14px 12px;}
+}
+
+
+/* ---------- Kiosk: step wizard configurator ---------- */
+.wiz-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;}
+.wiz-back{background:none;border:1px solid var(--hairline);color:var(--ink-dim);border-radius:8px;padding:8px 12px;font-size:.68rem;cursor:pointer;flex:0 0 auto;}
+.wiz-progress{flex:1 1 auto;display:flex;gap:5px;}
+.wiz-progress .dot{flex:1 1 auto;height:4px;border-radius:2px;background:var(--hairline-strong);}
+.wiz-progress .dot.done{background:var(--orange-dim);}
+.wiz-progress .dot.on{background:var(--orange);}
+.wiz-step-photo{width:100%;aspect-ratio:16/9;background:var(--raised);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.wiz-step-photo img{width:100%;height:100%;object-fit:contain;}
+.wiz-step-photo .ph{font-size:2.6rem;color:var(--ink-faint);}
+.wiz-title{font-family:'Inter',sans-serif;font-weight:800;letter-spacing:-.01em;font-size:1.2rem;color:var(--ink);margin-bottom:4px;}
+.wiz-sub{font-size:.72rem;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:18px;}
+.wiz-mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;}
+.wiz-mode-cards .wmc{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;padding:20px 14px;text-align:center;cursor:pointer;}
+.wiz-mode-cards .wmc:active{border-color:var(--orange);}
+.wiz-mode-cards .wmc .wmc-t{font-family:'Inter',sans-serif;text-transform:uppercase;font-weight:700;font-size:.78rem;letter-spacing:.04em;color:var(--ink);margin-bottom:6px;}
+.wiz-mode-cards .wmc .wmc-p{color:var(--orange);font-weight:700;font-size:.9rem;}
+.wiz-skip{width:100%;background:none;border:1px solid var(--hairline);color:var(--ink-dim);border-radius:8px;padding:13px;font-size:.75rem;cursor:pointer;margin-top:6px;}
+.wiz-next{width:100%;background:var(--orange);color:#ffffff;border:none;border-radius:8px;padding:14px;font-weight:700;font-size:.8rem;cursor:pointer;margin-top:6px;}
+.summary-block{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
+.summary-block h4{font-size:.7rem;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.summary-block .sb-row{display:flex;justify-content:space-between;font-size:.82rem;color:var(--ink);padding:4px 0;}
+.summary-block .sb-row span:last-child{color:var(--ink-dim);}
+
+.mode-switch{display:flex;gap:8px;margin-bottom:20px;}
+.mode-switch button{flex:1;padding:13px 6px;border-radius:10px;border:1px solid var(--hairline);background:var(--raised);color:var(--ink-dim);font-size:.74rem;cursor:pointer;}
+.mode-switch button.active{border-color:var(--orange);background:rgba(217,164,65,.12);color:var(--orange);}
+
+.opt-group{margin-bottom:22px;}
+.opt-group-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.opt-group-head h4{color:var(--orange);font-size:.78rem;letter-spacing:.05em;}
+.opt-group-head .req{font-size:.6rem;color:var(--hot);text-transform:uppercase;letter-spacing:.05em;}
+.opt-group-head .cnt{font-size:.6rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.05em;}
+.opt-pick-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid var(--hairline);border-radius:10px;margin-bottom:8px;cursor:pointer;}
+.opt-pick-row.picked{border-color:var(--orange);background:rgba(217,164,65,.08);}
+.opt-pick-row .opn{font-size:.85rem;}
+.opt-pick-row .opp{font-size:.7rem;color:var(--orange-dim);margin-left:6px;}
+.opt-pick-row .stepper{display:flex;align-items:center;gap:10px;cursor:default;}
+.opt-pick-row .stepper button{width:28px;height:28px;border-radius:50%;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.9rem;cursor:pointer;}
+.opt-pick-row .stepper button:disabled{opacity:.3;cursor:default;}
+.opt-tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.opt-tile{position:relative;background:var(--raised);border:1px solid var(--hairline);border-radius:14px;overflow:hidden;cursor:pointer;}
+.opt-tile.picked{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;}
+.opt-tile-photo{width:100%;aspect-ratio:1/1;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.opt-tile-photo img{width:100%;height:100%;object-fit:cover;}
+.opt-tile-photo .ph{font-size:1.8rem;color:var(--ink-faint);}
+.opt-tile-body{padding:9px 10px 11px;}
+.opt-tile-name{font-size:.76rem;color:var(--ink);line-height:1.3;margin-bottom:3px;}
+.opt-tile-price{font-size:.68rem;color:var(--orange-dim);}
+.opt-tile-check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--orange);color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;}
+.opt-tile-qty{display:flex;align-items:center;justify-content:center;gap:10px;padding:0 10px 11px;cursor:default;}
+.opt-tile-qty button{width:26px;height:26px;border-radius:50%;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);font-size:.85rem;cursor:pointer;}
+.opt-tile-qty button:disabled{opacity:.3;cursor:default;}
+.opt-tile-qty .qv{font-size:.8rem;color:var(--ink);min-width:14px;text-align:center;}
+
+.price-breakdown{border-top:1px solid var(--hairline-strong);margin-top:20px;padding-top:14px;}
+.price-breakdown .pb-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-dim);padding:3px 0;gap:10px;}
+.price-breakdown .pb-total{display:flex;justify-content:space-between;font-size:1.05rem;color:var(--orange);font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid var(--hairline);}
+
+.qty-stepper{display:flex;align-items:center;gap:16px;margin:18px 0;}
+.qty-stepper button{width:38px;height:38px;border-radius:50%;border:1px solid var(--hairline);background:var(--raised);color:var(--ink);font-size:1.1rem;cursor:pointer;}
+.qty-stepper .qv{font-size:1.1rem;min-width:24px;text-align:center;}
+
+.add-cart-btn{width:100%;background:var(--orange);color:#ffffff;border:none;border-radius:10px;padding:16px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:6px;}
+
+.cart-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--raised);border-top:1px solid var(--hairline-strong);padding:12px 5vw;display:none;align-items:center;justify-content:space-between;gap:12px;}
+.cart-bar.show{display:flex;}
+.cart-bar .cb-info{font-size:.76rem;color:var(--ink-dim);}
+.cart-bar .cb-total{color:var(--orange);font-weight:700;font-size:1rem;}
+.cart-bar button{background:var(--orange);color:#ffffff;border:none;border-radius:8px;padding:12px 20px;font-weight:700;font-size:.78rem;cursor:pointer;}
+
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:55;display:none;align-items:flex-end;justify-content:center;}
+.cart-overlay.open{display:flex;}
+.cart-panel{background:var(--surface);width:100%;max-width:640px;border-radius:18px 18px 0 0;padding:22px 20px 30px;max-height:88vh;overflow-y:auto;border-top:1px solid var(--hairline-strong);}
+.cart-panel h2{color:var(--orange);margin-bottom:16px;font-size:1.1rem;}
+.cart-line{border-bottom:1px solid var(--hairline);padding:14px 0;}
+.cart-line .cl-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;}
+.cart-line .cl-name{font-size:.9rem;font-weight:600;}
+.cart-line .cl-price{color:var(--orange-dim);font-size:.85rem;white-space:nowrap;}
+.cart-line .cl-opts{font-size:.68rem;color:var(--ink-dim);line-height:1.5;margin-bottom:8px;}
+.cart-line .cl-row{display:flex;justify-content:space-between;align-items:center;}
+.cart-line .cl-qty{display:flex;align-items:center;gap:10px;}
+.cart-line .cl-qty button{width:26px;height:26px;border-radius:50%;border:1px solid var(--hairline);background:var(--bg);color:var(--ink);cursor:pointer;}
+.cart-line .cl-remove{color:var(--hot);font-size:.7rem;background:none;border:none;cursor:pointer;}
+.cart-line .cl-edit{color:var(--ink-dim);font-size:.7rem;background:none;border:none;cursor:pointer;text-decoration:underline;}
+.cart-line .cl-edit:active{color:var(--orange);}
+.cart-empty{text-align:center;color:var(--ink-dim);padding:40px 10px;font-size:.85rem;}
+.cart-total-row{display:flex;justify-content:space-between;padding-top:16px;margin-top:10px;border-top:1px solid var(--hairline-strong);font-size:1.05rem;color:var(--orange);font-weight:700;}
+.cart-panel .close-cart{width:100%;margin-top:18px;background:none;border:1px solid var(--hairline);color:var(--ink);border-radius:10px;padding:13px;font-size:.85rem;cursor:pointer;}
+
+/* ---------- Checkout: Zusatzverkäufe + Bestätigung ---------- */
+.checkout-kicker{font-size:.68rem;color:var(--orange);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-weight:700;}
+.checkout-sub{font-size:.8rem;color:var(--ink-dim);margin-bottom:16px;}
+.upsell-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.upsell-tile{border:1px solid var(--hairline);border-radius:14px;overflow:hidden;background:var(--surface);}
+.upsell-tile-photo{width:100%;aspect-ratio:5/4;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.upsell-tile-photo img{width:97%;height:97%;object-fit:contain;}
+.upsell-tile-body{padding:10px 10px 12px;}
+.upsell-tile-name{font-size:.8rem;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:2px;}
+.upsell-tile-price{font-size:.74rem;color:var(--orange);font-weight:700;margin-bottom:8px;}
+.upsell-tile-add{width:100%;background:none;border:1.5px solid var(--orange);color:var(--orange);border-radius:8px;padding:8px;font-size:.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.03em;}
+.upsell-tile-add.added{background:var(--orange);color:#fff;border-color:var(--orange);}
+.checkout-actions{display:flex;gap:10px;margin-top:4px;}
+.checkout-actions .ghost{flex:1;background:none;border:1px solid var(--hairline);color:var(--ink);border-radius:10px;padding:14px;font-size:.82rem;cursor:pointer;font-weight:600;}
+.checkout-actions .primary{flex:1.4;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:.82rem;font-weight:700;cursor:pointer;}
+.checkout-back-link{display:block;text-align:center;color:var(--ink-dim);font-size:.76rem;background:none;border:none;cursor:pointer;margin-top:14px;text-decoration:underline;width:100%;}
+</style>
+</head>
+<body>
+
+<main>
+  <div id="preview" class="active">
+    <div class="kiosk-sticky-head" id="kioskStickyHead">
+      <div class="kiosk-header">
+        <div class="kh-brand" id="khBrand">
+          <div class="kh-mark">CC</div>
+          <div class="kh-word">Chicago<br><span>Chicken</span></div>
+        </div>
+        <div class="kh-slogan" id="khSlogan"></div>
+        <div class="kh-actions">
+          <button class="kh-icon-btn" onclick="openCart()" title="Warenkorb">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.6 12.6a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 8H6"/></svg>
+            <span class="kh-badge" id="khCartCount">0</span>
+          </button>
+        </div>
+      </div>
+      <div class="kiosk-top">
+        <div class="kiosk-crumbs" id="kioskCrumbs"></div>
+        <div class="kiosk-nav-row">
+          <button onclick="kioskBack()">← Zurück</button>
+        </div>
+      </div>
+    </div>
+    <div class="kiosk-body">
+      <nav class="kiosk-sidebar" id="kioskSidebar"></nav>
+      <div class="kiosk-main"><div id="kioskScreen"></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- Warenkorb-Leiste -->
+<div class="cart-bar" id="cartBar">
+  <div class="cb-info">🛒 <span id="cartCount">0</span> Artikel · <span class="cb-total" id="cartBarTotal">0,00 €</span></div>
+  <button onclick="openCart()">Warenkorb</button>
+</div>
+
+<!-- Warenkorb-Overlay -->
+<div class="cart-overlay" id="cartOverlay">
+  <div class="cart-panel">
+    <h2>Warenkorb</h2>
+    <div id="cartLines"></div>
+    <div class="cart-total-row"><span>Gesamt</span><span id="cartGrandTotal">0,00 €</span></div>
+    <button class="add-cart-btn" id="cartCheckoutBtn" onclick="startCheckout()" style="margin-top:16px;">Bestellung abschließen</button>
+    <button class="close-cart" onclick="closeCart()">Weiter bestellen</button>
+  </div>
+</div>
+
+<!-- Checkout-Overlay: Zusatzverkäufe + Bestätigung -->
+<div class="cart-overlay" id="checkoutOverlay">
+  <div class="cart-panel" id="checkoutPanel"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'chicagoMenuData';
+const DB_NAME = 'ChicagoMenuDB';
+const DB_STORE = 'menu';
+let data = {categories: [], menus: [], menuRules: [], menusTile: {image:null, description:'Kombiniere deine Favoriten'}, brandLogo: null, headerSlogan: '', upsellItemIds: [], upsellCustomItems: []};
+let editingItemId = null;
+let editingItemCat = null;
+let pendingHeat = 0;
+let pendingImage = null;
+let pendingItemMenuImage = null;
+let pendingUpsellImage = null;
+let editingUpsellItemId = null;
+let dbInstance = null;
+
+/* ---------- IndexedDB (statt localStorage) ---------- */
+function openDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function getDB(){
+  if(!dbInstance) dbInstance = await openDB();
+  return dbInstance;
+}
+async function idbGet(key){
+  const db = await getDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(key);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbSet(key, value){
+  const db = await getDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(value, key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+
+/* ---------- Datenmodell-Migration (abwärtskompatibel) ---------- */
+function migrate(d){
+  if(!d.menusTile) d.menusTile = {image:null, description:'Kombiniere deine Favoriten'};
+  if(d.menusTile.image===undefined) d.menusTile.image = null;
+  if(d.menusTile.description===undefined) d.menusTile.description = '';
+  if(d.brandLogo===undefined) d.brandLogo = null;
+  if(d.headerSlogan===undefined) d.headerSlogan = '';
+  if(!Array.isArray(d.upsellItemIds)) d.upsellItemIds = [];
+  if(!Array.isArray(d.upsellCustomItems)) d.upsellCustomItems = [];
+  d.upsellCustomItems.forEach(u=>{ if(u.active===undefined) u.active = true; });
+  if(!d.categories) d.categories = [];
+  d.categories.forEach(c=>{
+    if(c.image===undefined) c.image = null;
+    if(c.description===undefined) c.description = '';
+    if(c.visible===undefined) c.visible = true;
+    if(!c.items) c.items = [];
+    c.items.forEach(it=>{ if(it.menuEligible===undefined) it.menuEligible = true; if(it.menuImage===undefined) it.menuImage = null; });
+  });
+  if(!d.menus) d.menus = [];
+  d.menus.forEach(m=>{
+    if(!m.fixedComponents) m.fixedComponents = [];
+    if(!m.groups) m.groups = [];
+    m.groups.forEach(g=>{
+      if(g.required===undefined) g.required = true;
+      if(g.sourceCategoryId===undefined) g.sourceCategoryId = null;
+      if(!g.options) g.options = [];
+      g.options.forEach(o=>{ if(o.image===undefined) o.image = null; });
+    });
+  });
+  if(!d.menuRules) d.menuRules = [];
+  d.menuRules.forEach(r=>{
+    if(!r.groups) r.groups = [];
+    r.groups.forEach(g=>{
+      if(g.required===undefined) g.required = true;
+      if(g.sourceCategoryId===undefined) g.sourceCategoryId = null;
+      if(!g.options) g.options = [];
+      g.options.forEach(o=>{ if(o.image===undefined) o.image = null; });
+    });
+  });
+  return d;
+}
+
+async function loadData(){
+  try{
+    const stored = await idbGet(STORAGE_KEY);
+    if(stored){ migrate(stored); return stored; }
+  } catch(e){ console.error('IndexedDB Laden fehlgeschlagen', e); }
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      migrate(parsed);
+      await idbSet(STORAGE_KEY, parsed);
+      toast('Alte Daten übernommen');
+      return parsed;
+    }
+  } catch(e){}
+  return migrate({categories: [], menus: [], menuRules: []});
+}
+async function saveData(){
+  try{
+    await idbSet(STORAGE_KEY, data);
+  } catch(e){
+    console.error('Speichern fehlgeschlagen', e);
+    alert('⚠️ Speichern fehlgeschlagen: ' + (e.message || e) + '\n\nBitte sofort auf "Export" tippen, um deine Daten zu sichern!');
+  }
+  renderAll();
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function heatLabel(level){ return ['','Mild','Medium','Hot'][level] || ''; }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+/* ---------- Mode switch ---------- */
+function setMode(mode){
+  document.getElementById('edit').style.display = mode==='edit' ? 'block':'none';
+  document.getElementById('preview').classList.toggle('active', mode==='preview');
+  document.getElementById('modeEditBtn').classList.toggle('active', mode==='edit');
+  document.getElementById('modePreviewBtn').classList.toggle('active', mode==='preview');
+  if(mode==='preview'){ kioskHome(); }
+  updateCartBar();
+}
+
+/* ---------- Kategorien ---------- */
+function addCategory(){
+  const input = document.getElementById('newCatName');
+  const name = input.value.trim();
+  if(!name) return;
+  data.categories.push({id: uid(), name, items: [], image:null, description:'', visible:true});
+  input.value = '';
+  saveData();
+}
+function renameCategory(catId, value){
+  const cat = data.categories.find(c=>c.id===catId);
+  if(cat) cat.name = value;
+  idbSet(STORAGE_KEY, data).catch(e=>console.error('Speichern fehlgeschlagen', e));
+}
+function updateCatDesc(catId, value){
+  const cat = data.categories.find(c=>c.id===catId);
+  if(cat) cat.description = value;
+  idbSet(STORAGE_KEY, data).catch(e=>console.error('Speichern fehlgeschlagen', e));
+}
+function toggleCatVisible(catId, checked){
+  const cat = data.categories.find(c=>c.id===catId);
+  if(cat) cat.visible = checked;
+  saveData();
+}
+function onCatImageSelected(catId, e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      const cat = data.categories.find(c=>c.id===catId);
+      if(cat) cat.image = dataUrl;
+      saveData();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function onMenusTileImageSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      data.menusTile.image = canvas.toDataURL('image/jpeg', 0.82);
+      saveData();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function onBrandLogoSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 520;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      // Logo bleibt transparent (kein weißer Fond) – Kiosk-Header ist ohnehin weiß.
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      data.brandLogo = canvas.toDataURL('image/png');
+      saveData();
+      renderBrandLogoEdit();
+      renderKioskHeaderBrand();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removeBrandLogo(){
+  data.brandLogo = null;
+  saveData();
+  renderBrandLogoEdit();
+  renderKioskHeaderBrand();
+}
+function upsellKey(catId,itemId){ return catId+'::'+itemId; }
+function getUpsellItems(){
+  const result = [];
+  const validKeys = [];
+  (data.upsellItemIds||[]).forEach(key=>{
+    const [catId,itemId] = key.split('::');
+    const cat = data.categories.find(c=>c.id===catId);
+    const item = cat && cat.items.find(i=>i.id===itemId);
+    if(cat && item){ result.push({name:item.name, price:item.price||0, image:item.image}); validKeys.push(key); }
+  });
+  if(validKeys.length !== (data.upsellItemIds||[]).length) data.upsellItemIds = validKeys;
+  (data.upsellCustomItems||[]).filter(u=>u.active!==false).forEach(u=>{
+    result.push({name:u.name, price:u.price||0, image:u.image});
+  });
+  return result;
+}
+function toggleUpsellItem(catId,itemId){
+  const key = upsellKey(catId,itemId);
+  const idx = data.upsellItemIds.indexOf(key);
+  if(idx>-1) data.upsellItemIds.splice(idx,1); else data.upsellItemIds.push(key);
+  saveData();
+  renderUpsellPickList();
+}
+function renderUpsellPickList(){
+  const wrap = document.getElementById('upsellPickList');
+  if(!wrap) return;
+  const catsWithItems = (data.categories||[]).filter(c=>c.items && c.items.length);
+  document.getElementById('upsellEmptyHint').style.display = catsWithItems.length ? 'none' : 'block';
+  wrap.innerHTML = catsWithItems.map(c=>`
+    <div class="upsell-cat-group">
+      <h4>${escapeHtml(c.name)}</h4>
+      ${c.items.map(it=>{
+        const picked = data.upsellItemIds.includes(upsellKey(c.id,it.id));
+        return `<div class="upsell-item-row ${picked?'picked':''}" onclick="toggleUpsellItem('${c.id}','${it.id}')">
+          <input type="checkbox" ${picked?'checked':''}/>
+          <div class="uithumb">${it.image ? `<img src="${it.image}"/>` : '<span class="ph" style="font-size:1rem;">🍽️</span>'}</div>
+          <div class="uin">${escapeHtml(it.name)}</div>
+          <div class="uip">${(it.price||0).toFixed(2)} €</div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+/* ---------- Eigene Zusatzartikel (Probiergrößen, nur für Upsell) ---------- */
+function openUpsellItemModal(id){
+  editingUpsellItemId = id;
+  pendingUpsellImage = null;
+  const u = id ? data.upsellCustomItems.find(x=>x.id===id) : null;
+  document.getElementById('upsellItemModalTitle').textContent = u ? 'Zusatzartikel bearbeiten' : 'Neuer Zusatzartikel';
+  document.getElementById('upsellItemName').value = u ? u.name : '';
+  document.getElementById('upsellItemDesc').value = u ? (u.description||'') : '';
+  document.getElementById('upsellItemPrice').value = u ? u.price : '';
+  document.getElementById('upsellItemImgPreview').innerHTML = u && u.image ? `<img src="${u.image}"/>` : '<span class="ph">🍽️</span>';
+  const delBtn = document.getElementById('deleteUpsellItemBtn');
+  delBtn.style.display = u ? 'block' : 'none';
+  delBtn.dataset.armed = '';
+  delBtn.textContent = '✕';
+  document.getElementById('upsellItemModalBg').classList.add('open');
+}
+function closeUpsellItemModal(){
+  document.getElementById('upsellItemModalBg').classList.remove('open');
+}
+function onUpsellItemImageSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingUpsellImage = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('upsellItemImgPreview').innerHTML = `<img src="${pendingUpsellImage}"/>`;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function saveUpsellItem(){
+  const name = document.getElementById('upsellItemName').value.trim();
+  const description = document.getElementById('upsellItemDesc').value.trim();
+  const price = parseFloat(document.getElementById('upsellItemPrice').value) || 0;
+  if(!name){ toast('Bitte eine Bezeichnung eingeben'); return; }
+  if(editingUpsellItemId){
+    const u = data.upsellCustomItems.find(x=>x.id===editingUpsellItemId);
+    u.name = name; u.description = description; u.price = price;
+    if(pendingUpsellImage) u.image = pendingUpsellImage;
+  } else {
+    data.upsellCustomItems.push({id: uid(), name, description, price, image: pendingUpsellImage || null, active:true});
+  }
+  closeUpsellItemModal();
+  saveData();
+  toast('Gespeichert');
+}
+function deleteUpsellItem(){
+  const btn = document.getElementById('deleteUpsellItemBtn');
+  if(btn.dataset.armed === '1'){
+    data.upsellCustomItems = data.upsellCustomItems.filter(u=>u.id!==editingUpsellItemId);
+    closeUpsellItemModal();
+    saveData();
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sicher?';
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed=''; btn.textContent='✕'; } }, 3000);
+  }
+}
+function toggleUpsellCustomActive(id){
+  const u = data.upsellCustomItems.find(x=>x.id===id);
+  if(!u) return;
+  u.active = u.active===false ? true : false;
+  saveData();
+}
+function renderUpsellCustomList(){
+  const wrap = document.getElementById('upsellCustomList');
+  if(!wrap) return;
+  const items = data.upsellCustomItems || [];
+  document.getElementById('upsellCustomEmptyHint').style.display = items.length ? 'none' : 'block';
+  wrap.innerHTML = items.map(u=>`
+    <div class="edit-item-row">
+      <div class="thumb">${u.image ? `<img src="${u.image}"/>` : '<span class="ph">🍽️</span>'}</div>
+      <div class="info">
+        <div class="n">${escapeHtml(u.name)}</div>
+        <div class="p">${(u.price||0).toFixed(2)} €${u.active===false ? ' · <span style="color:var(--hot);">deaktiviert</span>' : ''}</div>
+      </div>
+      <button title="${u.active===false?'Aktivieren':'Deaktivieren'}" onclick="toggleUpsellCustomActive('${u.id}')">${u.active===false ? '👁️‍🗨️' : '👁️'}</button>
+      <button onclick="openUpsellItemModal('${u.id}')">✎</button>
+    </div>`).join('');
+}
+function renderBrandLogoEdit(){
+  const thumb = document.getElementById('brandLogoThumb');
+  if(!thumb) return;
+  thumb.innerHTML = data.brandLogo ? `<img src="${data.brandLogo}" style="width:100%;height:100%;object-fit:contain;"/>` : '<span class="ph" style="font-size:1.3rem;">🏷️</span>';
+  const sloganInput = document.getElementById('headerSloganInput');
+  if(sloganInput && document.activeElement !== sloganInput) sloganInput.value = data.headerSlogan || '';
+}
+function updateHeaderSlogan(val){
+  data.headerSlogan = val;
+  renderKioskHeaderSlogan();
+}
+function renderKioskHeaderSlogan(){
+  const el = document.getElementById('khSlogan');
+  if(!el) return;
+  const raw = data.headerSlogan || '';
+  el.innerHTML = escapeHtml(raw).split('\n').map(line=>line.trim()).filter(Boolean).join('<br>');
+  adjustKioskStickyOffset();
+}
+function renderKioskHeaderBrand(){
+  const el = document.getElementById('khBrand');
+  if(!el) return;
+  el.innerHTML = data.brandLogo
+    ? `<img src="${data.brandLogo}" class="kh-logo-img"/>`
+    : `<div class="kh-mark">CC</div><div class="kh-word">Chicago<br><span>Chicken</span></div>`;
+  renderKioskHeaderSlogan();
+  adjustKioskStickyOffset();
+}
+function updateMenusTileDesc(val){ data.menusTile.description = val; }
+function renderMenusTileEdit(){
+  const thumb = document.getElementById('menusTileThumb');
+  const desc = document.getElementById('menusTileDesc');
+  if(!thumb || !desc) return;
+  thumb.innerHTML = data.menusTile.image ? `<img src="${data.menusTile.image}"/>` : '<span class="ph" style="font-size:1.3rem;">🖼️</span>';
+  if(document.activeElement !== desc) desc.value = data.menusTile.description || '';
+}
+function deleteCategory(catId, btn){
+  if(btn.dataset.armed === '1'){
+    data.categories = data.categories.filter(c=>c.id!==catId);
+    saveData();
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = '?';
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed=''; btn.textContent='✕'; } }, 3000);
+  }
+}
+function moveCategory(catId, dir){
+  const idx = data.categories.findIndex(c=>c.id===catId);
+  const swap = idx + dir;
+  if(swap<0 || swap>=data.categories.length) return;
+  [data.categories[idx], data.categories[swap]] = [data.categories[swap], data.categories[idx]];
+  saveData();
+}
+function moveItem(catId, itemId, dir){
+  const cat = data.categories.find(c=>c.id===catId);
+  const idx = cat.items.findIndex(i=>i.id===itemId);
+  const swap = idx + dir;
+  if(swap<0 || swap>=cat.items.length) return;
+  [cat.items[idx], cat.items[swap]] = [cat.items[swap], cat.items[idx]];
+  saveData();
+}
+
+/* ---------- Item Modal ---------- */
+function openItemModal(catId, itemId){
+  editingItemCat = catId;
+  editingItemId = itemId;
+  pendingImage = null;
+  pendingItemMenuImage = null;
+  const cat = data.categories.find(c=>c.id===catId);
+  const item = itemId ? cat.items.find(i=>i.id===itemId) : null;
+
+  document.getElementById('itemModalTitle').textContent = item ? 'Gericht bearbeiten' : 'Neues Gericht';
+  document.getElementById('itemName').value = item ? item.name : '';
+  document.getElementById('itemDesc').value = item ? item.description || '' : '';
+  document.getElementById('itemPrice').value = item ? item.price : '';
+  document.getElementById('itemMenuEligible').checked = item ? item.menuEligible !== false : true;
+  const delBtn = document.getElementById('deleteItemBtn');
+  delBtn.style.display = item ? 'block' : 'none';
+  delBtn.dataset.armed = '';
+  delBtn.textContent = '✕';
+  document.getElementById('itemImgPreview').innerHTML = item && item.image ? `<img src="${item.image}"/>` : '<span class="ph">🍗</span>';
+  document.getElementById('itemMenuImgPreview').innerHTML = item && item.menuImage ? `<img src="${item.menuImage}"/>` : '<span class="ph">🍱</span>';
+  setHeat(item ? (item.heat||0) : 0);
+  document.getElementById('itemModalBg').classList.add('open');
+}
+function closeItemModal(){
+  document.getElementById('itemModalBg').classList.remove('open');
+}
+function setHeat(level){
+  pendingHeat = level;
+  [0,1,2,3].forEach(l => document.getElementById('heat'+l).classList.toggle('active', l===level));
+}
+function onImageSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingImage = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('itemImgPreview').innerHTML = `<img src="${pendingImage}"/>`;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function onMenuItemImageSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 900;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingItemMenuImage = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('itemMenuImgPreview').innerHTML = `<img src="${pendingItemMenuImage}"/>`;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function saveItem(){
+  const name = document.getElementById('itemName').value.trim();
+  const description = document.getElementById('itemDesc').value.trim();
+  const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+  const menuEligible = document.getElementById('itemMenuEligible').checked;
+  if(!name){ toast('Bitte eine Bezeichnung eingeben'); return; }
+
+  const cat = data.categories.find(c=>c.id===editingItemCat);
+  if(editingItemId){
+    const item = cat.items.find(i=>i.id===editingItemId);
+    item.name = name; item.description = description; item.price = price; item.heat = pendingHeat;
+    item.menuEligible = menuEligible;
+    if(pendingImage) item.image = pendingImage;
+    if(pendingItemMenuImage) item.menuImage = pendingItemMenuImage;
+  } else {
+    cat.items.push({
+      id: uid(), name, description, price, heat: pendingHeat,
+      image: pendingImage || null, menuImage: pendingItemMenuImage || null, menuEligible
+    });
+  }
+  closeItemModal();
+  saveData();
+  toast('Gespeichert');
+}
+function deleteItem(){
+  const btn = document.getElementById('deleteItemBtn');
+  if(btn.dataset.armed === '1'){
+    const cat = data.categories.find(c=>c.id===editingItemCat);
+    cat.items = cat.items.filter(i=>i.id!==editingItemId);
+    closeItemModal();
+    saveData();
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sicher?';
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed=''; btn.textContent='✕'; } }, 3000);
+  }
+}
+
+/* ---------- Render: Edit-Liste (Kategorien) ---------- */
+function renderEdit(){
+  const wrap = document.getElementById('catEditList');
+  document.getElementById('editEmptyHint').style.display = data.categories.length ? 'none' : 'block';
+  wrap.innerHTML = data.categories.map((cat, ci) => `
+    <div class="cat-edit-block">
+      <div class="cat-edit-head">
+        <button onclick="moveCategory('${cat.id}',-1)" title="nach oben">▲</button>
+        <button onclick="moveCategory('${cat.id}',1)" title="nach unten">▼</button>
+        <input value="${escapeAttr(cat.name)}" oninput="renameCategory('${cat.id}', this.value)" onblur="saveData()"/>
+        <button class="del" onclick="deleteCategory('${cat.id}', this)">✕</button>
+      </div>
+      <div class="cat-edit-extra">
+        <div class="cthumb">${cat.image ? `<img src="${cat.image}"/>` : '<span class="ph" style="font-size:1.3rem;">🖼️</span>'}</div>
+        <div class="cinfo">
+          <label class="upload-btn-sm" for="catimg_${cat.id}">Kachel-Bild wählen</label>
+          <input type="file" id="catimg_${cat.id}" accept="image/*" onchange="onCatImageSelected('${cat.id}', event)"/>
+          <textarea placeholder="Kurzbeschreibung für die Kiosk-Kachel" oninput="updateCatDesc('${cat.id}', this.value)" onblur="saveData()">${escapeHtml(cat.description||'')}</textarea>
+          <label class="cat-visible-toggle"><input type="checkbox" ${cat.visible!==false?'checked':''} onchange="toggleCatVisible('${cat.id}', this.checked)"/> In der Vorschau sichtbar</label>
+        </div>
+      </div>
+      ${cat.items.map((item, ii) => `
+        <div class="edit-item-row">
+          <div style="display:flex;flex-direction:column;">
+            <button onclick="moveItem('${cat.id}','${item.id}',-1)">▲</button>
+            <button onclick="moveItem('${cat.id}','${item.id}',1)">▼</button>
+          </div>
+          <div class="thumb">${item.image ? `<img src="${item.image}"/>` : '<span class="ph">🍗</span>'}</div>
+          <div class="info">
+            <div class="n">${escapeHtml(item.name)}${item.heat ? ' · ' + heatLabel(item.heat) : ''}</div>
+            <div class="p">${(item.price||0).toFixed(2)} €</div>
+          </div>
+          <button onclick="openItemModal('${cat.id}','${item.id}')">✎</button>
+        </div>
+      `).join('')}
+      <button class="add-item-btn" onclick="openItemModal('${cat.id}', null)">+ Gericht zu „${escapeAttr(cat.name)}“ hinzufügen</button>
+    </div>
+  `).join('');
+}
+
+function renderAll(){
+  renderEdit();
+  renderMenusTileEdit();
+  renderBrandLogoEdit();
+  renderKioskHeaderBrand();
+  renderMenuEdit();
+  renderRuleEdit();
+  renderUpsellPickList();
+  renderUpsellCustomList();
+  if(document.getElementById('preview').classList.contains('active')) renderKiosk();
+  updateCartBar();
+}
+
+/* ================================================================
+   Kombi-Menüs — Datenmodell: data.menus = [{
+     id, name, description, image,
+     priceMode: 'fixed' | 'markup',
+     fixedPrice, baseItemCatId, baseItemId, markup,
+     fixedComponents: [{id, qty, label}],
+     groups: [{id, name, count, required, sourceCategoryId, options:[{id, name, priceModifier, sourceItemId}]}]
+   }]
+   ================================================================ */
+let editingMenuId = null;
+let pendingMenuImage = null;
+let menuDraft = null;
+
+function newMenuDraft(){
+  return {
+    id: null, name: '', description: '', image: null,
+    priceMode: 'fixed', fixedPrice: 0,
+    baseItemCatId: null, baseItemId: null, markup: 0,
+    fixedComponents: [], groups: []
+  };
+}
+
+function getAllItemsFlat(){
+  const list = [];
+  data.categories.forEach(cat=>{
+    cat.items.forEach(item=>{
+      list.push({catId: cat.id, itemId: item.id, catName: cat.name, name: item.name, price: item.price||0});
+    });
+  });
+  return list;
+}
+
+function computeMenuPrice(m){
+  if(m.priceMode === 'fixed') return m.fixedPrice || 0;
+  const base = getAllItemsFlat().find(i=>i.catId===m.baseItemCatId && i.itemId===m.baseItemId);
+  return (base ? base.price : 0) + (m.markup || 0);
+}
+function menuPriceLabel(m){ return computeMenuPrice(m).toFixed(2) + ' €'; }
+
+/* ---------- Modal öffnen / schließen (Kombi-Menü) ---------- */
+function openMenuModal(menuId){
+  editingMenuId = menuId;
+  pendingMenuImage = null;
+  menuDraft = menuId ? JSON.parse(JSON.stringify(data.menus.find(x=>x.id===menuId))) : newMenuDraft();
+
+  document.getElementById('menuModalTitle').textContent = menuId ? 'Menü bearbeiten' : 'Neues Menü';
+  document.getElementById('menuName').value = menuDraft.name;
+  document.getElementById('menuDesc').value = menuDraft.description;
+  document.getElementById('menuImgPreview').innerHTML = menuDraft.image ? `<img src="${menuDraft.image}"/>` : '<span class="ph">🍔</span>';
+  document.getElementById('menuFixedPrice').value = menuDraft.fixedPrice || '';
+  document.getElementById('menuMarkup').value = menuDraft.markup || '';
+  renderBaseItemSelect();
+  document.getElementById('menuBaseItemSelect').value = (menuDraft.baseItemCatId && menuDraft.baseItemId) ? (menuDraft.baseItemCatId+'|'+menuDraft.baseItemId) : '';
+  setMenuPriceMode(menuDraft.priceMode);
+
+  const delBtn = document.getElementById('deleteMenuBtn');
+  delBtn.style.display = menuId ? 'block' : 'none';
+  delBtn.dataset.armed = '';
+  delBtn.textContent = '✕';
+
+  renderMenuComponents();
+  renderGroups('menu');
+  document.getElementById('menuModalBg').classList.add('open');
+}
+function closeMenuModal(){
+  document.getElementById('menuModalBg').classList.remove('open');
+  menuDraft = null;
+}
+
+function onMenuImageSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingMenuImage = canvas.toDataURL('image/jpeg', 0.82);
+      menuDraft.image = pendingMenuImage;
+      document.getElementById('menuImgPreview').innerHTML = `<img src="${pendingMenuImage}"/>`;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- Preislogik ---------- */
+function setMenuPriceMode(mode){
+  menuDraft.priceMode = mode;
+  document.getElementById('modeFixedBtn').classList.toggle('active', mode==='fixed');
+  document.getElementById('modeMarkupBtn').classList.toggle('active', mode==='markup');
+  document.getElementById('fixedPriceField').style.display = mode==='fixed' ? 'block':'none';
+  document.getElementById('markupFields').style.display = mode==='markup' ? 'block':'none';
+  updateMarkupPreview();
+}
+function renderBaseItemSelect(){
+  const sel = document.getElementById('menuBaseItemSelect');
+  const byCat = {};
+  getAllItemsFlat().forEach(i=>{ (byCat[i.catName] = byCat[i.catName]||[]).push(i); });
+  sel.innerHTML = '<option value="">– Basisprodukt wählen –</option>' + Object.keys(byCat).map(catName => `
+    <optgroup label="${escapeAttr(catName)}">
+      ${byCat[catName].map(i=>`<option value="${i.catId}|${i.itemId}">${escapeAttr(i.name)} (${i.price.toFixed(2)} €)</option>`).join('')}
+    </optgroup>
+  `).join('');
+}
+function onBaseItemChange(val){
+  if(!val){ menuDraft.baseItemCatId=null; menuDraft.baseItemId=null; }
+  else { const [catId,itemId] = val.split('|'); menuDraft.baseItemCatId = catId; menuDraft.baseItemId = itemId; }
+  updateMarkupPreview();
+}
+function onMarkupChange(val){ menuDraft.markup = parseFloat(val) || 0; updateMarkupPreview(); }
+function onFixedPriceChange(val){ menuDraft.fixedPrice = parseFloat(val) || 0; }
+function updateMarkupPreview(){
+  const el = document.getElementById('markupPreview');
+  if(menuDraft.priceMode!=='markup'){ el.textContent=''; return; }
+  const base = getAllItemsFlat().find(i=>i.catId===menuDraft.baseItemCatId && i.itemId===menuDraft.baseItemId);
+  if(!base){ el.textContent = 'Bitte Basisprodukt wählen'; return; }
+  const total = base.price + (menuDraft.markup||0);
+  el.textContent = `${base.name} ${base.price.toFixed(2)} € + Aufpreis ${(menuDraft.markup||0).toFixed(2)} € = ${total.toFixed(2)} €`;
+}
+
+/* ---------- Feste Bestandteile (nur Kombi-Menüs) ---------- */
+function addFixedComponent(){ menuDraft.fixedComponents.push({id: uid(), qty: 1, label: ''}); renderMenuComponents(); }
+function updateFixedComponent(id, field, val){
+  const c = menuDraft.fixedComponents.find(x=>x.id===id);
+  if(!c) return;
+  if(field==='qty') c.qty = parseInt(val)||1; else c.label = val;
+}
+function removeFixedComponent(id){ menuDraft.fixedComponents = menuDraft.fixedComponents.filter(x=>x.id!==id); renderMenuComponents(); }
+function renderMenuComponents(){
+  document.getElementById('menuFixedList').innerHTML = menuDraft.fixedComponents.map(c=>`
+    <div class="comp-row">
+      <input class="qty" type="number" min="1" value="${c.qty}" onchange="updateFixedComponent('${c.id}','qty',this.value)"/>
+      <input class="clabel" placeholder="z.B. Tenders" value="${escapeAttr(c.label)}" oninput="updateFixedComponent('${c.id}','label',this.value)"/>
+      <button onclick="removeFixedComponent('${c.id}')">✕</button>
+    </div>
+  `).join('') || '<div class="upload-hint">Noch keine festen Bestandteile.</div>';
+}
+
+/* ---------- Auswahlgruppen (generisch für Kombi-Menüs & Menü-Regeln) ---------- */
+function draftFor(ctx){ return ctx==='menu' ? menuDraft : ruleDraft; }
+function groupsOf(ctx){ const d = draftFor(ctx); if(!d.groups) d.groups=[]; return d.groups; }
+function addGroup(ctx){ groupsOf(ctx).push({id: uid(), name:'', count:1, required:true, sourceCategoryId:null, options:[]}); renderGroups(ctx); }
+function removeGroup(ctx, id){ const d = draftFor(ctx); d.groups = d.groups.filter(g=>g.id!==id); renderGroups(ctx); }
+function updateGroup(ctx, id, field, val){
+  const g = groupsOf(ctx).find(x=>x.id===id);
+  if(!g) return;
+  if(field==='count') g.count = Math.max(1, parseInt(val)||1);
+  else if(field==='required') g.required = !!val;
+  else if(field==='name') g.name = val;
+  else if(field==='sourceCategoryId'){
+    g.sourceCategoryId = val || null;
+    if(g.sourceCategoryId) syncGroupFromCategory(g);
+    renderGroups(ctx);
+  }
+}
+function syncGroupFromCategory(g){
+  const cat = data.categories.find(c=>c.id===g.sourceCategoryId);
+  if(!cat) return;
+  const prevByItem = {};
+  (g.options||[]).forEach(o=>{ if(o.sourceItemId) prevByItem[o.sourceItemId] = o.priceModifier; });
+  g.options = cat.items.map(it=>({
+    id: uid(), name: it.name,
+    priceModifier: prevByItem[it.id]!==undefined ? prevByItem[it.id] : 0,
+    image: it.image || null,
+    sourceItemId: it.id
+  }));
+}
+function addGroupOption(ctx, groupId){
+  const g = groupsOf(ctx).find(x=>x.id===groupId);
+  if(!g || g.sourceCategoryId) return;
+  g.options.push({id: uid(), name:'', priceModifier:0, image:null});
+  renderGroups(ctx);
+}
+function removeGroupOption(ctx, groupId, optId){
+  const g = groupsOf(ctx).find(x=>x.id===groupId);
+  g.options = g.options.filter(o=>o.id!==optId);
+  renderGroups(ctx);
+}
+function updateGroupOption(ctx, groupId, optId, field, val){
+  const g = groupsOf(ctx).find(x=>x.id===groupId);
+  const o = g.options.find(x=>x.id===optId);
+  if(!o) return;
+  if(field==='name') o.name = val; else o.priceModifier = parseFloat(val)||0;
+}
+function onGroupOptionImageSelected(ctx, groupId, optId, e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const g = groupsOf(ctx).find(x=>x.id===groupId);
+  const o = g && g.options.find(x=>x.id===optId);
+  if(!o) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 500;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx2 = canvas.getContext('2d');
+      ctx2.fillStyle = '#ffffff';
+      ctx2.fillRect(0, 0, canvas.width, canvas.height);
+      ctx2.drawImage(img, 0, 0, canvas.width, canvas.height);
+      o.image = canvas.toDataURL('image/jpeg', 0.82);
+      renderGroups(ctx);
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function renderGroups(ctx){
+  const containerId = ctx==='menu' ? 'menuGroupsList' : 'ruleGroupsList';
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const groups = groupsOf(ctx);
+  container.innerHTML = groups.map(g=>`
+    <div class="group-card">
+      <div class="group-card-head">
+        <input class="gname" placeholder="z.B. Beilage auswählen" value="${escapeAttr(g.name)}" oninput="updateGroup('${ctx}','${g.id}','name',this.value)"/>
+        <div>
+          <div class="group-count-label">Anzahl</div>
+          <input class="gcount" type="number" min="1" value="${g.count}" onchange="updateGroup('${ctx}','${g.id}','count',this.value)"/>
+        </div>
+        <button class="del" onclick="removeGroup('${ctx}','${g.id}')">✕</button>
+      </div>
+      <div class="rule-meta-row">
+        <label class="cat-visible-toggle" style="flex:1"><input type="checkbox" ${g.required?'checked':''} onchange="updateGroup('${ctx}','${g.id}','required',this.checked)"/> Pflichtauswahl</label>
+        <select onchange="updateGroup('${ctx}','${g.id}','sourceCategoryId',this.value)">
+          <option value="">Manuelle Optionen</option>
+          ${data.categories.map(c=>`<option value="${c.id}" ${g.sourceCategoryId===c.id?'selected':''}>${escapeAttr(c.name)}</option>`).join('')}
+        </select>
+      </div>
+      ${g.options.map(o=>`
+        <div class="group-opt-row">
+          <label class="opt-thumb-upload">
+            <input type="file" accept="image/*" onchange="onGroupOptionImageSelected('${ctx}','${g.id}','${o.id}',event)" style="display:none;"/>
+            ${o.image ? `<img src="${o.image}"/>` : '<span>📷</span>'}
+          </label>
+          <input class="oname" placeholder="Option, z.B. Pommes" value="${escapeAttr(o.name)}" ${g.sourceCategoryId?'disabled':''} oninput="updateGroupOption('${ctx}','${g.id}','${o.id}','name',this.value)"/>
+          <input class="oprice" type="number" step="0.10" placeholder="+0.00" value="${o.priceModifier||''}" onchange="updateGroupOption('${ctx}','${g.id}','${o.id}','price',this.value)"/>
+          ${g.sourceCategoryId ? '' : `<button onclick="removeGroupOption('${ctx}','${g.id}','${o.id}')">✕</button>`}
+        </div>
+      `).join('')}
+      ${g.sourceCategoryId ? '<div class="upload-hint">Optionen werden automatisch aus der Kategorie übernommen. Aufpreise können links angepasst werden.</div>' : `<button class="add-item-btn" onclick="addGroupOption('${ctx}','${g.id}')">+ Option hinzufügen</button>`}
+    </div>
+  `).join('') || '<div class="upload-hint">Noch keine Auswahlgruppen.</div>';
+}
+
+/* ---------- Speichern / Löschen / Sortieren (Kombi-Menü) ---------- */
+function saveMenu(){
+  const name = document.getElementById('menuName').value.trim();
+  if(!name){ toast('Bitte einen Namen eingeben'); return; }
+  menuDraft.name = name;
+  menuDraft.description = document.getElementById('menuDesc').value.trim();
+  menuDraft.fixedComponents = menuDraft.fixedComponents.filter(c=>c.label.trim());
+  menuDraft.groups = menuDraft.groups.filter(g=>g.name.trim()).map(g=>({...g, options: g.options.filter(o=>o.name.trim())}));
+
+  data.menus = data.menus || [];
+  if(editingMenuId){
+    const idx = data.menus.findIndex(m=>m.id===editingMenuId);
+    menuDraft.id = editingMenuId;
+    data.menus[idx] = menuDraft;
+  } else {
+    menuDraft.id = uid();
+    data.menus.push(menuDraft);
+  }
+  closeMenuModal();
+  saveData();
+  toast('Menü gespeichert');
+}
+function deleteMenu(){
+  const btn = document.getElementById('deleteMenuBtn');
+  if(btn.dataset.armed === '1'){
+    data.menus = data.menus.filter(m=>m.id!==editingMenuId);
+    closeMenuModal();
+    saveData();
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sicher?';
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed=''; btn.textContent='✕'; } }, 3000);
+  }
+}
+function moveMenu(menuId, dir){
+  const idx = data.menus.findIndex(m=>m.id===menuId);
+  const swap = idx+dir;
+  if(swap<0 || swap>=data.menus.length) return;
+  [data.menus[idx], data.menus[swap]] = [data.menus[swap], data.menus[idx]];
+  saveData();
+}
+
+/* ---------- Render: Edit-Liste (Kombi-Menüs) ---------- */
+function renderMenuEdit(){
+  data.menus = data.menus || [];
+  const wrap = document.getElementById('menuEditList');
+  document.getElementById('menuEmptyHint').style.display = data.menus.length ? 'none' : 'block';
+  wrap.innerHTML = data.menus.map(m => `
+    <div class="edit-item-row">
+      <div style="display:flex;flex-direction:column;">
+        <button onclick="moveMenu('${m.id}',-1)" title="nach oben">▲</button>
+        <button onclick="moveMenu('${m.id}',1)" title="nach unten">▼</button>
+      </div>
+      <div class="thumb">${m.image ? `<img src="${m.image}"/>` : '<span class="ph">🍔</span>'}</div>
+      <div class="info">
+        <div class="n">${escapeHtml(m.name)}</div>
+        <div class="p">${menuPriceLabel(m)}</div>
+      </div>
+      <button onclick="openMenuModal('${m.id}')">✎</button>
+    </div>
+  `).join('');
+}
+
+/* ================================================================
+   NEU: Menü-Regeln — machen alle Produkte einer Kategorie im Kiosk
+   als Menü bestellbar. Datenmodell: data.menuRules = [{
+     id, name, description, image,
+     sourceCategoryId, markup,
+     groups: [{id, name, count, required, sourceCategoryId, options:[...]}]
+   }]
+   ================================================================ */
+let editingRuleId = null;
+let pendingRuleImage = null;
+let ruleDraft = null;
+
+function newRuleDraft(){
+  return { id:null, name:'', description:'', image:null, sourceCategoryId:null, markup:0, groups:[] };
+}
+function renderRuleSourceCatSelect(){
+  const sel = document.getElementById('ruleSourceCat');
+  sel.innerHTML = '<option value="">– Kategorie wählen –</option>' + data.categories.map(c=>`<option value="${c.id}">${escapeAttr(c.name)}</option>`).join('');
+  sel.value = ruleDraft.sourceCategoryId || '';
+}
+function openRuleModal(ruleId){
+  editingRuleId = ruleId;
+  pendingRuleImage = null;
+  ruleDraft = ruleId ? JSON.parse(JSON.stringify(data.menuRules.find(r=>r.id===ruleId))) : newRuleDraft();
+
+  document.getElementById('ruleModalTitle').textContent = ruleId ? 'Menü-Regel bearbeiten' : 'Neue Menü-Regel';
+  document.getElementById('ruleName').value = ruleDraft.name;
+  document.getElementById('ruleDesc').value = ruleDraft.description;
+  document.getElementById('ruleImgPreview').innerHTML = ruleDraft.image ? `<img src="${ruleDraft.image}"/>` : '<span class="ph">🍔</span>';
+  document.getElementById('ruleMarkup').value = ruleDraft.markup || '';
+  renderRuleSourceCatSelect();
+  document.getElementById('ruleSourceCat').onchange = (e)=>{ ruleDraft.sourceCategoryId = e.target.value || null; };
+
+  const delBtn = document.getElementById('deleteRuleBtn');
+  delBtn.style.display = ruleId ? 'block' : 'none';
+  delBtn.dataset.armed = '';
+  delBtn.textContent = '✕';
+
+  renderGroups('rule');
+  document.getElementById('ruleModalBg').classList.add('open');
+}
+function closeRuleModal(){
+  document.getElementById('ruleModalBg').classList.remove('open');
+  ruleDraft = null;
+}
+function onRuleImageSelected(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingRuleImage = canvas.toDataURL('image/jpeg', 0.82);
+      ruleDraft.image = pendingRuleImage;
+      document.getElementById('ruleImgPreview').innerHTML = `<img src="${pendingRuleImage}"/>`;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function saveRule(){
+  const name = document.getElementById('ruleName').value.trim();
+  if(!name){ toast('Bitte einen Namen eingeben'); return; }
+  if(!ruleDraft.sourceCategoryId){ toast('Bitte eine Kategorie wählen'); return; }
+  ruleDraft.name = name;
+  ruleDraft.description = document.getElementById('ruleDesc').value.trim();
+  ruleDraft.markup = parseFloat(document.getElementById('ruleMarkup').value) || 0;
+  ruleDraft.groups = ruleDraft.groups.filter(g=>g.name.trim()).map(g=>({...g, options: g.options.filter(o=>o.name.trim())}));
+
+  data.menuRules = data.menuRules || [];
+  if(editingRuleId){
+    const idx = data.menuRules.findIndex(r=>r.id===editingRuleId);
+    ruleDraft.id = editingRuleId;
+    data.menuRules[idx] = ruleDraft;
+  } else {
+    ruleDraft.id = uid();
+    data.menuRules.push(ruleDraft);
+  }
+  closeRuleModal();
+  saveData();
+  toast('Menü-Regel gespeichert');
+}
+function deleteRule(){
+  const btn = document.getElementById('deleteRuleBtn');
+  if(btn.dataset.armed === '1'){
+    data.menuRules = data.menuRules.filter(r=>r.id!==editingRuleId);
+    closeRuleModal();
+    saveData();
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sicher?';
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed=''; btn.textContent='✕'; } }, 3000);
+  }
+}
+function moveRule(ruleId, dir){
+  const idx = data.menuRules.findIndex(r=>r.id===ruleId);
+  const swap = idx+dir;
+  if(swap<0 || swap>=data.menuRules.length) return;
+  [data.menuRules[idx], data.menuRules[swap]] = [data.menuRules[swap], data.menuRules[idx]];
+  saveData();
+}
+function renderRuleEdit(){
+  data.menuRules = data.menuRules || [];
+  const wrap = document.getElementById('ruleEditList');
+  document.getElementById('ruleEmptyHint').style.display = data.menuRules.length ? 'none' : 'block';
+  wrap.innerHTML = data.menuRules.map(r=>{
+    const cat = data.categories.find(c=>c.id===r.sourceCategoryId);
+    return `
+    <div class="edit-item-row">
+      <div style="display:flex;flex-direction:column;">
+        <button onclick="moveRule('${r.id}',-1)" title="nach oben">▲</button>
+        <button onclick="moveRule('${r.id}',1)" title="nach unten">▼</button>
+      </div>
+      <div class="thumb">${r.image ? `<img src="${r.image}"/>` : '<span class="ph">🍔</span>'}</div>
+      <div class="info">
+        <div class="n">${escapeHtml(r.name)}</div>
+        <div class="p">${cat ? escapeHtml(cat.name) : '⚠ Kategorie fehlt'} · +${(r.markup||0).toFixed(2)} €</div>
+      </div>
+      <button onclick="openRuleModal('${r.id}')">✎</button>
+    </div>`;
+  }).join('');
+}
+
+/* ================================================================
+   NEU: Kiosk-Vorschau — Navigation, Konfigurator & Warenkorb
+   ================================================================ */
+let navStack = [{screen:'home'}];
+let cart = [];
+let detailQty = 1;
+let cfgState = null;
+let editingCartId = null;
+function kioskHome(){ navStack = [{screen:'home'}]; cfgState = null; renderKiosk(); }
+function kioskBack(){ if(navStack.length>1) navStack.pop(); renderKiosk(); }
+function pushScreen(s){ navStack.push(s); renderKiosk(); }
+function jumpTo(i){ navStack = navStack.slice(0, i+1); renderKiosk(); }
+
+function renderKiosk(){ renderBreadcrumbs(); renderSidebar(); renderKioskScreen(); updateCartBar(); adjustKioskStickyOffset(); }
+
+function adjustKioskStickyOffset(){
+  const head = document.getElementById('kioskStickyHead');
+  if(!head) return;
+  requestAnimationFrame(()=>{
+    const headTop = parseFloat(getComputedStyle(head).top) || 0;
+    const total = headTop + head.offsetHeight + 18;
+    document.documentElement.style.setProperty('--sidebar-top', total + 'px');
+  });
+}
+window.addEventListener('resize', adjustKioskStickyOffset);
+
+/* ---------- Permanent Seitenleiste ---------- */
+function sidebarRootKey(s){
+  if(!s) return 'home';
+  if(s.screen==='home') return 'home';
+  if(s.screen==='category') return 'cat:'+s.catId;
+  if(['menuroot','rule','combilist'].includes(s.screen)) return 'menus';
+  return null;
+}
+function renderSidebar(){
+  const el = document.getElementById('kioskSidebar');
+  if(!el) return;
+  const cats = data.categories.filter(c=>c.visible!==false);
+  const hasMenus = (data.menus && data.menus.length) || (data.menuRules && data.menuRules.length);
+  let activeKey = 'home';
+  for(let i=navStack.length-1;i>=0;i--){
+    const k = sidebarRootKey(navStack[i]);
+    if(k){ activeKey = k; break; }
+  }
+  let html = `<div class="sb-item no-img ${activeKey==='home'?'active':''}" onclick="kioskHome()"><span class="sb-label">⌂ Start</span></div>`;
+  if(hasMenus) html += `<div class="sb-item ${data.menusTile.image?'':'no-img'} ${activeKey==='menus'?'active':''}" onclick="kioskOpenMenuRoot()">${data.menusTile.image?`<img src="${data.menusTile.image}"/>`:''}<span class="sb-label">${data.menusTile.image?'':'🍱 '}Menüs</span></div>`;
+  html += cats.map(c=>`<div class="sb-item ${c.image?'':'no-img'} ${activeKey==='cat:'+c.id?'active':''}" onclick="kioskOpenCategory('${c.id}')">${c.image?`<img src="${c.image}"/>`:''}<span class="sb-label">${escapeHtml(c.name)}</span></div>`).join('');
+  el.innerHTML = html;
+}
+
+function screenLabel(s){
+  switch(s.screen){
+    case 'home': return 'Start';
+    case 'category': { const c=data.categories.find(x=>x.id===s.catId); return c?c.name:'Kategorie'; }
+    case 'menuroot': return 'Menüs';
+    case 'rule': { const r=(data.menuRules||[]).find(x=>x.id===s.ruleId); return r?r.name:'Menü'; }
+    case 'combilist': return 'Kombi-Menüs';
+    case 'itemdetail': return s.itemName || 'Produkt';
+    case 'configurator': return s.title || 'Konfigurieren';
+    default: return '';
+  }
+}
+function renderBreadcrumbs(){
+  const el = document.getElementById('kioskCrumbs');
+  if(!el) return;
+  el.innerHTML = navStack.map((s,i)=>{
+    const isLast = i===navStack.length-1;
+    return `<span class="crumb" ${isLast?'':`onclick="jumpTo(${i})"`}>${escapeHtml(screenLabel(s))}</span>${isLast?'':'<span class="sep">›</span>'}`;
+  }).join('');
+}
+
+function renderKioskScreen(){
+  const el = document.getElementById('kioskScreen');
+  if(!el) return;
+  const s = navStack[navStack.length-1];
+  switch(s.screen){
+    case 'home': el.innerHTML = screenHome(); break;
+    case 'category': el.innerHTML = screenCategory(s.catId); break;
+    case 'menuroot': el.innerHTML = screenMenuRoot(); break;
+    case 'rule': el.innerHTML = screenRule(s.ruleId); break;
+    case 'combilist': el.innerHTML = screenCombiList(); break;
+    case 'itemdetail': el.innerHTML = screenItemDetail(s.catId, s.itemId); break;
+    case 'configurator': el.innerHTML = screenConfigurator(); break;
+    default: el.innerHTML = '';
+  }
+}
+
+function tileHtml(opts){
+  return `<div class="main-tile" onclick="${opts.onclick}">
+    <div class="mt-photo">${opts.image ? `<img src="${opts.image}"/>` : `<span class="ph">${opts.ph}</span>`}</div>
+    <div class="mt-body"><div class="mt-name">${escapeHtml(opts.name)}</div>${opts.desc ? `<div class="mt-desc">${escapeHtml(opts.desc)}</div>` : ''}</div>
+  </div>`;
+}
+
+function screenHome(){
+  const cats = data.categories.filter(c=>c.visible!==false);
+  const hasMenus = (data.menus && data.menus.length) || (data.menuRules && data.menuRules.length);
+  const tiles = cats.map(c=>tileHtml({onclick:`kioskOpenCategory('${c.id}')`, image:c.image, ph:'🍗', name:c.name, desc:c.description}));
+  if(hasMenus) tiles.unshift(tileHtml({onclick:`kioskOpenMenuRoot()`, image:data.menusTile.image, ph:'🍱', name:'Menüs', desc:data.menusTile.description}));
+  if(!tiles.length) return '<div class="p-empty">Noch keine Kategorien angelegt. Wechsle zu „Bearbeiten“, um loszulegen.</div>';
+  return `<div class="tile-grid">${tiles.join('')}</div>`;
+}
+function kioskOpenCategory(catId){ pushScreen({screen:'category', catId}); }
+function screenCategory(catId){
+  const cat = data.categories.find(c=>c.id===catId);
+  if(!cat) return '<div class="p-empty">Kategorie nicht gefunden.</div>';
+  if(!cat.items.length) return `<div class="p-empty">Noch keine Gerichte in „${escapeHtml(cat.name)}“.</div>`;
+  return `<div class="kiosk-product-grid">${cat.items.map(item=>`
+    <div class="kiosk-card" onclick="kioskOpenItem('${cat.id}','${item.id}')">
+      <div class="p-photo">${item.image ? `<img src="${item.image}"/>` : '<span class="ph">🍗</span>'}</div>
+      <div class="p-body">
+        <div class="p-top-row"><div class="p-name">${escapeHtml(item.name)}</div><div class="p-price">${(item.price||0).toFixed(2)} €</div></div>
+        <div class="p-desc">${escapeHtml(item.description||'')}</div>
+        ${item.heat ? `<div class="p-heat">${heatLabel(item.heat)}</div>` : ''}
+        <button class="sel-btn">Auswählen</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function kioskOpenItem(catId, itemId){ detailQty = 1; pushScreen({screen:'itemdetail', catId, itemId}); }
+function screenItemDetail(catId, itemId){
+  const cat = data.categories.find(c=>c.id===catId);
+  const item = cat && cat.items.find(i=>i.id===itemId);
+  if(!item) return '<div class="p-empty">Produkt nicht gefunden.</div>';
+  const rule = (data.menuRules||[]).find(r=>r.sourceCategoryId===catId);
+  const menuAvailable = rule && item.menuEligible!==false;
+  return `<div class="kiosk-detail">
+    <div class="kiosk-detail-photo">${item.image ? `<img src="${item.image}"/>` : '<span class="ph">🍗</span>'}</div>
+    <div class="kiosk-detail-name">${escapeHtml(item.name)}</div>
+    ${item.heat ? `<div class="p-heat" style="margin-bottom:10px;">${heatLabel(item.heat)}</div>` : ''}
+    <div class="kiosk-detail-desc">${escapeHtml(item.description||'')}</div>
+    <div class="p-price" style="font-size:1.1rem;margin-bottom:14px;">${(item.price||0).toFixed(2)} €</div>
+    ${menuAvailable ? `<button class="btn-ghost" style="width:100%;margin-bottom:14px;" onclick="kioskOpenRuleConfig('${rule.id}','${item.id}')">🍱 Auch als Menü – ab ${((item.price||0)+(rule.markup||0)).toFixed(2)} €</button>` : ''}
+    <div class="qty-stepper">
+      <button onclick="changeDetailQty(-1)">–</button><span class="qv" id="detailQtyVal">${detailQty}</span><button onclick="changeDetailQty(1)">+</button>
+    </div>
+    <button class="add-cart-btn" onclick="addSimpleToCart('${catId}','${itemId}')">In den Warenkorb – ${((item.price||0)*detailQty).toFixed(2)} €</button>
+  </div>`;
+}
+function changeDetailQty(d){ detailQty = Math.max(1, detailQty+d); renderKioskScreen(); }
+function addSimpleToCart(catId, itemId){
+  const cat = data.categories.find(c=>c.id===catId);
+  const item = cat.items.find(i=>i.id===itemId);
+  cart.push({cartId: uid(), name: item.name, image: item.image, unitPrice: item.price||0, qty: detailQty, lines: []});
+  toast('In den Warenkorb gelegt');
+  updateCartBar();
+  afterAddToCart(()=>kioskBack());
+}
+
+function kioskOpenMenuRoot(){ pushScreen({screen:'menuroot'}); }
+function screenMenuRoot(){
+  const rules = data.menuRules || [];
+  const combos = data.menus || [];
+  const tiles = rules.map(r=>tileHtml({onclick:`kioskOpenRule('${r.id}')`, image:r.image, ph:'🍔', name:r.name, desc:r.description}));
+  if(combos.length) tiles.push(tileHtml({onclick:`kioskOpenCombiList()`, image:null, ph:'🧾', name:'Kombi-Menüs', desc:'Frei kombinierte Menüs'}));
+  if(!tiles.length) return '<div class="p-empty">Noch keine Menüs angelegt.</div>';
+  return `<div class="tile-grid">${tiles.join('')}</div>`;
+}
+
+function kioskOpenRule(ruleId){ pushScreen({screen:'rule', ruleId}); }
+function screenRule(ruleId){
+  const rule = (data.menuRules||[]).find(r=>r.id===ruleId);
+  if(!rule) return '<div class="p-empty">Menü-Regel nicht gefunden.</div>';
+  const cat = data.categories.find(c=>c.id===rule.sourceCategoryId);
+  if(!cat || !cat.items.length) return '<div class="p-empty">Keine Produkte in der zugehörigen Kategorie hinterlegt.</div>';
+  const items = cat.items.filter(i=>i.menuEligible!==false);
+  if(!items.length) return '<div class="p-empty">Keine Produkte für diese Menü-Regel verfügbar.</div>';
+  return `<div class="kiosk-product-grid">${items.map(item=>`
+    <div class="kiosk-card" onclick="kioskOpenRuleConfig('${rule.id}','${item.id}')">
+      <div class="p-photo">${(item.menuImage||item.image) ? `<img src="${item.menuImage||item.image}"/>` : '<span class="ph">🍗</span>'}</div>
+      <div class="p-body">
+        <div class="p-top-row"><div class="p-name">${escapeHtml(item.name)}</div><div class="p-price">ab ${((item.price||0)+(rule.markup||0)).toFixed(2)} €</div></div>
+        <div class="p-desc">${escapeHtml(item.description||'')}</div>
+        <button class="sel-btn">Auswählen</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function kioskOpenCombiList(){ pushScreen({screen:'combilist'}); }
+function screenCombiList(){
+  const menus = data.menus || [];
+  if(!menus.length) return '<div class="p-empty">Keine Kombi-Menüs angelegt.</div>';
+  return `<div class="kiosk-product-grid">${menus.map(m=>`
+    <div class="kiosk-card" onclick="kioskOpenCombiConfig('${m.id}')">
+      <div class="p-photo">${m.image ? `<img src="${m.image}"/>` : '<span class="ph">🍔</span>'}</div>
+      <div class="p-body">
+        <div class="p-top-row"><div class="p-name">${escapeHtml(m.name)}</div><div class="p-price">${menuPriceLabel(m)}</div></div>
+        <div class="p-desc">${escapeHtml(m.description||'')}</div>
+        <button class="sel-btn">Auswählen</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+/* ---------- Konfigurator ---------- */
+function kioskOpenRuleConfig(ruleId, itemId){
+  const rule = (data.menuRules||[]).find(r=>r.id===ruleId);
+  const cat = data.categories.find(c=>c.id===rule.sourceCategoryId);
+  const item = cat.items.find(i=>i.id===itemId);
+  cfgState = { type:'rule', ruleId, catId: cat.id, itemId, mode:'menu', qty:1, selections:{}, step:-1 };
+  pushScreen({screen:'configurator', title: item.name});
+}
+function kioskOpenCombiConfig(menuId){
+  const m = data.menus.find(x=>x.id===menuId);
+  cfgState = { type:'combo', menuId, qty:1, selections:{}, step:0 };
+  pushScreen({screen:'configurator', title: m ? m.name : 'Menü'});
+}
+function currentCfgGroups(){
+  if(!cfgState) return [];
+  if(cfgState.type==='rule'){ const r=(data.menuRules||[]).find(x=>x.id===cfgState.ruleId); return r ? (r.groups||[]) : []; }
+  const m=(data.menus||[]).find(x=>x.id===cfgState.menuId); return m ? (m.groups||[]) : [];
+}
+/* Groups that are actually part of the guided flow for the current state */
+function cfgActiveGroups(){
+  if(cfgState.type==='rule' && cfgState.mode!=='menu') return [];
+  return currentCfgGroups();
+}
+function cfgBaseInfo(){
+  if(cfgState.type==='rule'){
+    const cat = data.categories.find(c=>c.id===cfgState.catId);
+    const item = cat.items.find(i=>i.id===cfgState.itemId);
+    const useMenuImg = cfgState.mode==='menu' && item.menuImage;
+    return {name:item.name, image: useMenuImg ? item.menuImage : item.image, desc:item.description||'', ph:'🍗'};
+  }
+  const m = data.menus.find(x=>x.id===cfgState.menuId);
+  return {name:m.name, image:m.image, desc:m.description||'', ph:'🍔'};
+}
+function cfgGroupChosen(g){ const sel = cfgState.selections[g.id] || {}; return Object.values(sel).reduce((a,b)=>a+b,0); }
+function cfgChooseMode(mode){ cfgState.mode = mode; cfgState.step = 0; renderKioskScreen(); }
+function changeCfgQty(d){ cfgState.qty = Math.max(1, cfgState.qty+d); renderKioskScreen(); }
+function cfgMaybeAdvance(g){
+  const chosen = cfgGroupChosen(g);
+  if(chosen>=g.count){ setTimeout(()=>{ if(cfgState) cfgNext(); }, 220); }
+}
+function cfgSelectSingle(groupId, optionId){
+  const g = cfgActiveGroups().find(x=>x.id===groupId);
+  cfgState.selections[groupId] = {[optionId]: 1};
+  renderKioskScreen();
+  if(g) cfgMaybeAdvance(g);
+}
+function cfgStep(groupId, optionId, delta){
+  const g = cfgActiveGroups().find(x=>x.id===groupId);
+  if(!g) return;
+  const sel = cfgState.selections[groupId] = cfgState.selections[groupId] || {};
+  const chosen = Object.values(sel).reduce((a,b)=>a+b,0);
+  if(delta>0 && chosen>=g.count) return;
+  let qty = (sel[optionId]||0) + delta;
+  qty = Math.max(0, qty);
+  if(qty===0) delete sel[optionId]; else sel[optionId] = qty;
+  renderKioskScreen();
+  if(delta>0) cfgMaybeAdvance(g);
+}
+function cfgNext(){
+  const groups = cfgActiveGroups();
+  if(cfgState.step < groups.length) cfgState.step++;
+  renderKioskScreen();
+}
+function cfgSkipGroup(){ cfgNext(); }
+function cfgPrev(){
+  const floor = cfgState.type==='rule' ? -1 : 0;
+  if(cfgState.step > floor){ cfgState.step--; renderKioskScreen(); }
+  else if(editingCartId){ cfgState = null; editingCartId = null; kioskHome(); openCart(); }
+  else { cfgState = null; kioskBack(); }
+}
+function optionGroupHtml(g){
+  const sel = cfgState.selections[g.id] || {};
+  const chosen = Object.values(sel).reduce((a,b)=>a+b,0);
+  const tiles = (g.options||[]).map(o=>{
+    const qty = sel[o.id] || 0;
+    const canInc = chosen < g.count;
+    const tileClick = g.count===1 ? `cfgSelectSingle('${g.id}','${o.id}')` : (canInc ? `cfgStep('${g.id}','${o.id}',1)` : '');
+    return `<div class="opt-tile ${qty?'picked':''}" ${tileClick?`onclick="${tileClick}"`:''}>
+      <div class="opt-tile-photo">${o.image ? `<img src="${o.image}"/>` : '<span class="ph">🍽️</span>'}</div>
+      <div class="opt-tile-body">
+        <div class="opt-tile-name">${escapeHtml(o.name)}</div>
+        ${o.priceModifier ? `<div class="opt-tile-price">+${o.priceModifier.toFixed(2)} €</div>` : ''}
+      </div>
+      ${g.count>1
+        ? `<div class="opt-tile-qty" onclick="event.stopPropagation()">
+            <button onclick="cfgStep('${g.id}','${o.id}',-1)">–</button>
+            <span class="qv">${qty}</span>
+            <button onclick="cfgStep('${g.id}','${o.id}',1)" ${chosen>=g.count?'disabled':''}>+</button>
+          </div>`
+        : (qty ? '<div class="opt-tile-check">✓</div>' : '')}
+    </div>`;
+  }).join('') || '<div class="upload-hint">Keine Optionen hinterlegt.</div>';
+  return `<div class="opt-group">
+    <div class="opt-group-head"><h4>${escapeHtml(g.name)}</h4><span class="${g.required?'req':'cnt'}">${g.required?'Pflicht':'Optional'} · ${chosen}/${g.count}</span></div>
+    <div class="opt-tile-grid">${tiles}</div>
+  </div>`;
+}
+function computeCfgPrice(){
+  const breakdown = []; let total = 0;
+  if(cfgState.type==='rule'){
+    const cat = data.categories.find(c=>c.id===cfgState.catId);
+    const item = cat.items.find(i=>i.id===cfgState.itemId);
+    breakdown.push({label:item.name, amount:item.price||0}); total += item.price||0;
+    if(cfgState.mode==='menu'){
+      const rule = data.menuRules.find(r=>r.id===cfgState.ruleId);
+      breakdown.push({label:'Menü-Aufpreis', amount: rule.markup||0}); total += rule.markup||0;
+      (rule.groups||[]).forEach(g=>{
+        const sel = cfgState.selections[g.id] || {};
+        Object.entries(sel).forEach(([optId,qty])=>{
+          const o = (g.options||[]).find(x=>x.id===optId); if(!o || !o.priceModifier) return;
+          breakdown.push({label: `${qty>1?qty+'× ':''}${o.name}`, amount: o.priceModifier*qty}); total += o.priceModifier*qty;
+        });
+      });
+    }
+  } else {
+    const m = data.menus.find(x=>x.id===cfgState.menuId);
+    const base = computeMenuPrice(m);
+    breakdown.push({label:m.name, amount: base}); total += base;
+    (m.groups||[]).forEach(g=>{
+      const sel = cfgState.selections[g.id] || {};
+      Object.entries(sel).forEach(([optId,qty])=>{
+        const o = (g.options||[]).find(x=>x.id===optId); if(!o || !o.priceModifier) return;
+        breakdown.push({label: `${qty>1?qty+'× ':''}${o.name}`, amount: o.priceModifier*qty}); total += o.priceModifier*qty;
+      });
+    });
+  }
+  return {breakdown, total};
+}
+function screenConfigurator(){
+  if(!cfgState) return '';
+  if(cfgState.type==='rule' && cfgState.step===-1) return cfgModeSelectHtml();
+  const groups = cfgActiveGroups();
+  if(cfgState.step < groups.length) return cfgGroupStepHtml(groups[cfgState.step], cfgState.step, groups.length);
+  return cfgSummaryHtml();
+}
+function cfgWizHead(progressCurrent, progressTotal){
+  let dots = '';
+  if(progressTotal>0){
+    dots = `<div class="wiz-progress">${Array.from({length:progressTotal}).map((_,i)=>`<div class="dot ${i<progressCurrent?'done':i===progressCurrent?'on':''}"></div>`).join('')}</div>`;
+  }
+  return `<div class="wiz-head"><button class="wiz-back" onclick="cfgPrev()">‹ Zurück</button>${dots}</div>`;
+}
+function cfgModeSelectHtml(){
+  const info = cfgBaseInfo();
+  const rule = (data.menuRules||[]).find(r=>r.id===cfgState.ruleId);
+  const cat = data.categories.find(c=>c.id===cfgState.catId);
+  const item = cat.items.find(i=>i.id===cfgState.itemId);
+  return `<div class="kiosk-detail">
+    ${cfgWizHead(0,0)}
+    <div class="wiz-step-photo">${info.image ? `<img src="${info.image}"/>` : `<span class="ph">${info.ph}</span>`}</div>
+    <div class="wiz-title">${escapeHtml(info.name)}</div>
+    <div class="kiosk-detail-desc">${escapeHtml(info.desc)}</div>
+    <div class="wiz-mode-cards">
+      <div class="wmc" onclick="cfgChooseMode('single')"><div class="wmc-t">Einzeln</div><div class="wmc-p">${(item.price||0).toFixed(2)} €</div></div>
+      <div class="wmc" onclick="cfgChooseMode('menu')"><div class="wmc-t">Als Menü</div><div class="wmc-p">+${(rule.markup||0).toFixed(2)} €</div></div>
+    </div>
+  </div>`;
+}
+function cfgGroupStepHtml(g, idx, total){
+  const chosen = cfgGroupChosen(g);
+  const remaining = Math.max(0, g.count - chosen);
+  const info = cfgBaseInfo();
+  return `<div class="kiosk-detail">
+    ${cfgWizHead(idx, total)}
+    <div class="wiz-sub">Schritt ${idx+1} von ${total} · ${g.required?'Pflicht':'Optional'}</div>
+    <div class="wiz-title">${escapeHtml(g.name)}</div>
+    <div class="kiosk-detail-desc">${remaining>0 ? `Noch <b>${remaining}</b> auswählen` : 'Auswahl abgeschlossen'}</div>
+    ${optionGroupHtml(g)}
+    ${!g.required ? `<button class="wiz-skip" onclick="cfgSkipGroup()">Überspringen</button>` : ''}
+    ${(chosen>=g.count && g.count>0) || !g.required ? `<button class="wiz-next" onclick="cfgNext()">Weiter</button>` : ''}
+  </div>`;
+}
+function cfgSummaryHtml(){
+  const info = cfgBaseInfo();
+  const {breakdown,total} = computeCfgPrice();
+  let html = `<div class="kiosk-detail">
+    ${cfgWizHead(0,0)}
+    <div class="wiz-step-photo">${info.image ? `<img src="${info.image}"/>` : `<span class="ph">${info.ph}</span>`}</div>
+    <div class="wiz-title">${escapeHtml(info.name)}</div>
+    <div class="kiosk-detail-desc">${escapeHtml(info.desc)}</div>`;
+  if(cfgState.type==='combo'){
+    const m = data.menus.find(x=>x.id===cfgState.menuId);
+    if((m.fixedComponents||[]).length){
+      html += `<div class="opt-group"><div class="opt-group-head"><h4>Enthalten</h4></div>${m.fixedComponents.map(c=>`<div class="opt-pick-row" style="cursor:default;"><span class="opn">${c.qty}× ${escapeHtml(c.label)}</span></div>`).join('')}</div>`;
+    }
+  }
+  html += `<div class="summary-block"><h4>Deine Auswahl</h4>${breakdown.map(b=>`<div class="sb-row"><span>${escapeHtml(b.label)}</span><span>${b.amount>=0?'+':''}${b.amount.toFixed(2)} €</span></div>`).join('')}<div class="pb-total"><span>Gesamt</span><span>${total.toFixed(2)} €</span></div></div>`;
+  html += `<div class="qty-stepper"><button onclick="changeCfgQty(-1)">–</button><span class="qv">${cfgState.qty}</span><button onclick="changeCfgQty(1)">+</button></div>`;
+  html += `<button class="add-cart-btn" onclick="addCfgToCart()">In den Warenkorb – ${(total*cfgState.qty).toFixed(2)} €</button></div>`;
+  return html;
+}
+function addCfgToCart(){
+  const groups = cfgActiveGroups();
+  for(const g of groups){
+    if(!g.required) continue;
+    const chosen = cfgGroupChosen(g);
+    if(chosen < g.count){ toast(`Bitte „${g.name}“ vollständig auswählen`); return; }
+  }
+  const {breakdown,total} = computeCfgPrice();
+  let name, image;
+  if(cfgState.type==='rule'){
+    const cat = data.categories.find(c=>c.id===cfgState.catId);
+    const item = cat.items.find(i=>i.id===cfgState.itemId);
+    name = item.name + (cfgState.mode==='menu' ? ' (Menü)' : '');
+    image = item.image;
+  } else {
+    const m = data.menus.find(x=>x.id===cfgState.menuId);
+    name = m.name; image = m.image;
+  }
+  const lines = breakdown.slice(1).map(b=>b.label);
+  const snapshot = JSON.parse(JSON.stringify(cfgState));
+  const wasEditing = !!editingCartId;
+  if(editingCartId){
+    const idx = cart.findIndex(c=>c.cartId===editingCartId);
+    if(idx>-1) cart[idx] = {cartId: editingCartId, name, image, unitPrice: total, qty: cfgState.qty, lines, cfgSnapshot: snapshot};
+    toast('Aktualisiert');
+    editingCartId = null;
+  } else {
+    cart.push({cartId: uid(), name, image, unitPrice: total, qty: cfgState.qty, lines, cfgSnapshot: snapshot});
+    toast('In den Warenkorb gelegt');
+  }
+  cfgState = null;
+  updateCartBar();
+  if(wasEditing){ afterAddToCart(()=>{ kioskHome(); openCart(); }); }
+  else { afterAddToCart(()=>kioskBack()); }
+}
+
+/* ---------- Warenkorb ---------- */
+function cartCount(){ return cart.reduce((a,c)=>a+c.qty,0); }
+function cartTotal(){ return cart.reduce((a,c)=>a+c.unitPrice*c.qty,0); }
+function updateCartBar(){
+  const bar = document.getElementById('cartBar');
+  if(!bar) return;
+  const count = cartCount();
+  const previewActive = document.getElementById('preview').classList.contains('active');
+  bar.classList.toggle('show', count>0 && previewActive);
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartBarTotal').textContent = cartTotal().toFixed(2)+' €';
+  const khCount = document.getElementById('khCartCount');
+  if(khCount) khCount.textContent = count;
+}
+/* ---------- Checkout: Zusatzverkäufe + Bestätigung ---------- */
+let pendingAfterUpsell = null;
+
+/* Wird direkt nach jedem "In den Warenkorb" aufgerufen – zeigt sofort den
+   Zusatzangebote-Screen als Kaufimpuls, falls welche konfiguriert sind. */
+function afterAddToCart(returnAction){
+  const offers = getUpsellItems();
+  if(offers.length){
+    pendingAfterUpsell = returnAction;
+    document.getElementById('checkoutOverlay').classList.add('open');
+    renderUpsellScreen(offers);
+  } else {
+    returnAction();
+  }
+}
+function startCheckout(){
+  if(!cart.length) return;
+  closeCart();
+  document.getElementById('checkoutOverlay').classList.add('open');
+  renderCheckoutConfirm();
+}
+function upsellContinue(){
+  closeCheckout();
+  if(pendingAfterUpsell) pendingAfterUpsell();
+  pendingAfterUpsell = null;
+}
+function closeCheckout(){ document.getElementById('checkoutOverlay').classList.remove('open'); }
+let currentUpsellOffers = [];
+function renderUpsellScreen(upItems){
+  currentUpsellOffers = upItems;
+  const panel = document.getElementById('checkoutPanel');
+  panel.innerHTML = `
+    <div class="checkout-kicker">Bevor es weitergeht</div>
+    <h2 style="margin-bottom:2px;">Darf es noch etwas sein?</h2>
+    <div class="checkout-sub">Beliebte Ergänzungen zu deiner Bestellung</div>
+    <div class="upsell-grid" id="upsellGrid">
+      ${upItems.map((o,i)=>`
+        <div class="upsell-tile">
+          <div class="upsell-tile-photo">${o.image ? `<img src="${o.image}"/>` : '<span class="ph" style="font-size:1.8rem;color:var(--ink-faint);">🍽️</span>'}</div>
+          <div class="upsell-tile-body">
+            <div class="upsell-tile-name">${escapeHtml(o.name)}</div>
+            <div class="upsell-tile-price">${o.price.toFixed(2)} €</div>
+            <button class="upsell-tile-add" onclick="quickAddUpsell(${i}, this)">+ Hinzufügen</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="checkout-actions">
+      <button class="ghost" onclick="upsellContinue()">Nein danke</button>
+      <button class="primary" onclick="upsellContinue()">Weiter</button>
+    </div>
+  `;
+}
+function quickAddUpsell(i, btn){
+  const o = currentUpsellOffers[i];
+  if(!o) return;
+  cart.push({cartId: uid(), name: o.name, image: o.image, unitPrice: o.price, qty: 1, lines: []});
+  updateCartBar();
+  btn.textContent = '✓ Hinzugefügt';
+  btn.classList.add('added');
+  btn.disabled = true;
+}
+function renderCheckoutConfirm(){
+  const panel = document.getElementById('checkoutPanel');
+  panel.innerHTML = `
+    <div class="checkout-kicker">Letzter Schritt</div>
+    <h2 style="margin-bottom:14px;">Deine Bestellung</h2>
+    <div>${cart.map(c=>`
+      <div class="cart-line">
+        <div class="cl-top"><span class="cl-name">${c.qty}× ${escapeHtml(c.name)}</span><span class="cl-price">${(c.unitPrice*c.qty).toFixed(2)} €</span></div>
+        ${c.lines && c.lines.length ? `<div class="cl-opts">${c.lines.map(l=>escapeHtml(l)).join(' · ')}</div>` : ''}
+      </div>`).join('')}</div>
+    <div class="cart-total-row"><span>Gesamt</span><span>${cartTotal().toFixed(2)} €</span></div>
+    <button class="add-cart-btn" style="margin-top:16px;" onclick="finalizeOrder()">Bestellung abschicken</button>
+    <button class="checkout-back-link" onclick="closeCheckout(); openCart();">Zurück zum Warenkorb</button>
+  `;
+}
+function finalizeOrder(){
+  cart = [];
+  closeCheckout();
+  updateCartBar();
+  toast('Bestellung aufgenommen – vielen Dank!');
+  kioskHome();
+}
+
+function openCart(){ renderCartPanel(); document.getElementById('cartOverlay').classList.add('open'); }
+function closeCart(){ document.getElementById('cartOverlay').classList.remove('open'); }
+function renderCartPanel(){
+  const wrap = document.getElementById('cartLines');
+  if(!cart.length){
+    wrap.innerHTML = '<div class="cart-empty">Warenkorb ist leer.</div>';
+  } else {
+    wrap.innerHTML = cart.map(c=>`
+      <div class="cart-line">
+        <div class="cl-top"><span class="cl-name">${escapeHtml(c.name)}</span><span class="cl-price">${(c.unitPrice*c.qty).toFixed(2)} €</span></div>
+        ${c.lines && c.lines.length ? `<div class="cl-opts">${c.lines.map(l=>escapeHtml(l)).join(' · ')}</div>` : ''}
+        <div class="cl-row">
+          <div class="cl-qty"><button onclick="cartChangeQty('${c.cartId}',-1)">–</button><span>${c.qty}</span><button onclick="cartChangeQty('${c.cartId}',1)">+</button></div>
+          <div style="display:flex;gap:14px;">
+            ${c.cfgSnapshot ? `<button class="cl-edit" onclick="editCartLine('${c.cartId}')">Bearbeiten</button>` : ''}
+            <button class="cl-remove" onclick="cartRemove('${c.cartId}')">Entfernen</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('cartGrandTotal').textContent = cartTotal().toFixed(2)+' €';
+  const checkoutBtn = document.getElementById('cartCheckoutBtn');
+  if(checkoutBtn) checkoutBtn.style.display = cart.length ? 'block' : 'none';
+  updateCartBar();
+}
+function cartChangeQty(cartId, delta){
+  const c = cart.find(x=>x.cartId===cartId); if(!c) return;
+  c.qty = Math.max(1, c.qty+delta);
+  renderCartPanel();
+}
+function cartRemove(cartId){
+  cart = cart.filter(x=>x.cartId!==cartId);
+  renderCartPanel();
+}
+function editCartLine(cartId){
+  const c = cart.find(x=>x.cartId===cartId);
+  if(!c || !c.cfgSnapshot) return;
+  cfgState = JSON.parse(JSON.stringify(c.cfgSnapshot));
+  editingCartId = cartId;
+  closeCart();
+  navStack = [{screen:'home'}, {screen:'configurator', title: c.name}];
+  renderKiosk();
+}
+
+/* ---------- Export / Import ---------- */
+function exportJson(){
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'chicago-chicken-menu.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup heruntergeladen');
+}
+function importJson(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed.categories) throw new Error('ungültiges Format');
+      migrate(parsed);
+      data = parsed;
+      saveData();
+      toast('Import erfolgreich');
+    } catch(err){
+      alert('Diese Datei konnte nicht gelesen werden: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+(async function initCustomerSite(){
+  const screen = document.getElementById('kioskScreen');
+  try {
+    const res = await fetch('menu-data.json', {cache: 'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    data = await res.json();
+  } catch(e) {
+    screen.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#888;">'
+      + '<p style="font-weight:700;margin-bottom:8px;">Menü konnte nicht geladen werden.</p>'
+      + '<p style="font-size:.85rem;">Bitte später erneut versuchen. (' + e.message + ')</p></div>';
+    console.error('Menü-Daten konnten nicht geladen werden:', e);
+    return;
+  }
+  migrate(data);
+  renderKioskHeaderBrand();
+  kioskHome();
+})();
+</script>
+</body>
+</html>
