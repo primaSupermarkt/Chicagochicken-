@@ -185,7 +185,7 @@ main{max-width:760px;margin:0 auto;padding:26px 5vw 40px;}
 .upsell-item-row .uip{font-size:.76rem;color:var(--gold-dim);white-space:nowrap;}
 
 /* ================= NEU: Kiosk-Vorschau ================= */
-.kiosk-sticky-head{position:sticky;top:57px;z-index:25;background:#fff;}
+.kiosk-sticky-head{position:sticky;top:0;z-index:25;background:#fff;}
 .kiosk-top{background:var(--bg);padding-bottom:14px;margin-bottom:4px;}
 .kiosk-crumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.66rem;color:var(--ink-dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em;}
 .kiosk-crumbs .sep{color:var(--ink-faint);}
@@ -353,10 +353,10 @@ main{max-width:760px;margin:0 auto;padding:26px 5vw 40px;}
   <div id="preview" class="active">
     <div class="kiosk-sticky-head" id="kioskStickyHead">
       <div class="kiosk-header">
-        <div class="kh-brand" id="khBrand">
+        <a href="index.html" class="kh-brand" id="khBrand" title="Zur Startseite" style="text-decoration:none;color:inherit;">
           <div class="kh-mark">CC</div>
           <div class="kh-word">Chicago<br><span>Chicken</span></div>
-        </div>
+        </a>
         <div class="kh-slogan" id="khSlogan"></div>
         <div class="kh-actions">
           <button class="kh-icon-btn" onclick="openCart()" title="Warenkorb">
@@ -374,7 +374,7 @@ main{max-width:760px;margin:0 auto;padding:26px 5vw 40px;}
     </div>
     <div class="kiosk-body">
       <nav class="kiosk-sidebar" id="kioskSidebar"></nav>
-      <div class="kiosk-main"><div id="kioskScreen"></div></div>
+      <div class="kiosk-main"><div id="kioskScreen"><div style="padding:60px 20px;text-align:center;color:#999;font-family:'Inter',sans-serif;">Menü wird geladen …</div></div></div>
     </div>
   </div>
 </main>
@@ -2055,7 +2055,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 (async function initCustomerSite(){
   const screen = document.getElementById('kioskScreen');
   try {
-    const res = await fetch('menu-data.json', {cache: 'no-store'});
+    const res = await fetch('menu-data.json');
     if(!res.ok) throw new Error('HTTP ' + res.status);
     data = await res.json();
   } catch(e) {
